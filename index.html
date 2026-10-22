@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Burs Dashboard</title>
+    <!-- Google Fonts & Font Awesome Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-page: #f4f6f9;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary: #2563eb;
+            --primary-gradient: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 4px 6px -1px rgba(0,0,0,0.05);
+
+            --diff-pos-text: #047857;
+            --diff-neg-text: #b91c1c;
+        }
+
+        [data-theme="dark"] {
+            --bg-page: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --primary-gradient: linear-gradient(135deg, #1d4ed8 0%, #60a5fa 100%);
+
+            --diff-pos-text: #34d399;
+            --diff-neg-text: #f87171;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 4px;
+        }
+
+        .header-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-title i {
+            color: var(--primary);
+        }
+
+        .theme-toggle {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .hero-card {
+            background: var(--primary-gradient);
+            color: #ffffff;
+            border-radius: 20px;
+            padding: 24px 20px 18px 20px;
+            box-shadow: 0 12px 24px -6px rgba(37, 99, 235, 0.3);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 150px;
+        }
+
+        .hero-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -30%;
+            width: 220px;
+            height: 220px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .hero-top {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .hero-label {
+            font-size: 1.05rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            opacity: 0.95;
+        }
+
+        .hero-value {
+            font-size: 2.35rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            line-height: 1.1;
+            margin-bottom: 16px;
+        }
+
+        .hero-bottom {
+            font-size: 0.78rem;
+            font-weight: 600;
+            opacity: 0.8;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding-top: 10px;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 105px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .card-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(37, 99, 235, 0.08);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            flex-shrink: 0;
+        }
+
+        [data-theme="dark"] .card-icon {
+            background: rgba(96, 165, 250, 0.15);
+        }
+
+        .card-title {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            line-height: 1.25;
+        }
+
+        .card-value {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+        }
+
+        .diff-card.diff-positive .card-value { color: var(--diff-pos-text); }
+        .diff-card.diff-positive .card-icon { background: rgba(4, 120, 87, 0.12); color: var(--diff-pos-text); }
+        .diff-card.diff-negative .card-value { color: var(--diff-neg-text); }
+        .diff-card.diff-negative .card-icon { background: rgba(185, 28, 28, 0.12); color: var(--diff-neg-text); }
+
+        .refresh-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .refresh-btn {
+            background: transparent;
+            border: none;
+            color: var(--primary);
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .spinning { animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1 class="header-title">
+                <i class="fa-solid fa-layer-group"></i>
+                BURS DASHBOARD
+            </h1>
+            <button class="theme-toggle" id="themeToggle" aria-label="Tema Değiştir">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+        </header>
+
+        <!-- Mevcut Burs Bakiyesi -->
+        <div class="hero-card">
+            <div class="hero-top">
+                <i class="fa-solid fa-wallet"></i>
+                <span class="hero-label">Mevcut Burs Bakiyesi</span>
+            </div>
+            <div class="hero-value" id="val-bakiye">Yükleniyor...</div>
+            <div class="hero-bottom">
+                <i class="fa-regular fa-clock"></i>
+                <span>Son Güncelleme: <span id="last-update-time">Bekleniyor...</span></span>
+            </div>
+        </div>
+
+        <!-- 6 Eşit Grid Kart -->
+        <div class="grid-container">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fa-solid fa-hand-holding-heart"></i></div>
+                    <span class="card-title">İnfakta Bulunan</span>
+                </div>
+                <div class="card-value" id="val-infaktaBulunan">--</div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fa-solid fa-user-graduate"></i></div>
+                    <span class="card-title">Burs Verilen</span>
+                </div>
+                <div class="card-value" id="val-bursVerilen">--</div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fa-solid fa-award"></i></div>
+                    <span class="card-title">Aylık Kişi Başı Burs</span>
+                </div>
+                <div class="card-value" id="val-kisiBasiBurs">--</div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fa-solid fa-money-bill-transfer"></i></div>
+                    <span class="card-title">Aylık Toplam Burs</span>
+                </div>
+                <div class="card-value" id="val-aylikToplamBurs">--</div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fa-solid fa-wallet"></i></div>
+                    <span class="card-title">Aylık Toplanan Tutar</span>
+                </div>
+                <div class="card-value" id="val-aylikToplanan">--</div>
+            </div>
+
+            <div class="card diff-card diff-positive" id="diffCard">
+                <div class="card-header">
+                    <div class="card-icon" id="diffIcon"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                    <span class="card-title">Fark</span>
+                </div>
+                <div class="card-value" id="val-fark">--</div>
+            </div>
+        </div>
+
+        <!-- Yenileme Çubuğu -->
+        <div class="refresh-bar">
+            <span><i class="fa-solid fa-rotate"></i> Her 60 saniyede bir güncellenir</span>
+            <button class="refresh-btn" onclick="fetchData()">
+                <i class="fa-solid fa-arrows-rotate" id="refreshIcon"></i> Şimdi Yenile
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbyKhrwDqc6kaqZxtwELorfctKa095VKbjCXpTONy8sBxNNyxpd5-GMLLA14qhVhdC8V/exec";
+
+        function formatCurrency(val) {
+            if (val === undefined || val === null || isNaN(val)) return "₺0";
+            return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0 }).format(val);
+        }
+
+        async function fetchData() {
+            const refreshIcon = document.getElementById('refreshIcon');
+            if (refreshIcon) refreshIcon.classList.add('spinning');
+
+            try {
+                const response = await fetch(API_URL, { redirect: 'follow' });
+                if (!response.ok) throw new Error("Sunucu yanıt vermedi.");
+                
+                const data = await response.json();
+
+                if (data) {
+                    if (data.bakiye !== undefined) {
+                        document.getElementById('val-bakiye').textContent = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2 }).format(data.bakiye) + ' ₺';
+                    }
+                    if (data.infaktaBulunan !== undefined) document.getElementById('val-infaktaBulunan').textContent = data.infaktaBulunan;
+                    if (data.bursVerilen !== undefined) document.getElementById('val-bursVerilen').textContent = data.bursVerilen;
+                    if (data.kisiBasiBurs !== undefined) document.getElementById('val-kisiBasiBurs').textContent = formatCurrency(data.kisiBasiBurs);
+                    if (data.aylikToplamBurs !== undefined) document.getElementById('val-aylikToplamBurs').textContent = formatCurrency(data.aylikToplamBurs);
+                    if (data.aylikToplanan !== undefined) document.getElementById('val-aylikToplanan').textContent = formatCurrency(data.aylikToplanan);
+
+                    if (data.fark !== undefined) {
+                        const diffCard = document.getElementById('diffCard');
+                        const diffIcon = document.getElementById('diffIcon');
+                        const diffValue = document.getElementById('val-fark');
+
+                        if (data.fark >= 0) {
+                            diffCard.className = 'card diff-card diff-positive';
+                            diffIcon.innerHTML = '<i class="fa-solid fa-arrow-trend-up"></i>';
+                            diffValue.textContent = '+' + formatCurrency(data.fark);
+                        } else {
+                            diffCard.className = 'card diff-card diff-negative';
+                            diffIcon.innerHTML = '<i class="fa-solid fa-arrow-trend-down"></i>';
+                            diffValue.textContent = formatCurrency(data.fark);
+                        }
+                    }
+
+                    const now = new Date();
+                    document.getElementById('last-update-time').textContent = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                }
+            } catch (err) {
+                console.error("Veri çekme hatası:", err);
+                document.getElementById('last-update-time').textContent = "Bağlantı Hatası!";
+            } finally {
+                if (refreshIcon) {
+                    setTimeout(() => refreshIcon.classList.remove('spinning'), 500);
+                }
+            }
+        }
+
+        // İlk açılış
+        fetchData();
+        setInterval(fetchData, 60000);
+
+        // Tema değiştirme
+        const themeToggle = document.getElementById('themeToggle');
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                document.documentElement.removeAttribute('data-theme');
+                themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>';
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+    </script>
+</body>
+</html>
