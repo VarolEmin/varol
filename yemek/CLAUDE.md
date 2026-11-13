@@ -42,6 +42,8 @@ Komutlar (`yemek/` içinden):
 - Ekran görüntüsü: Claude uygulamasının tarayıcı paneli 1024×768'e ayarlanarak (Playwright yok); telefon için 375×812.
 - **Yayın:** `python3 scripts/build.py --yayin` → `yemek/index.html` + `yemek/yemek.appcache` (iOS 9 çevrimdışı önbellek, sürüm hash'li). Commit + push `main` → GitHub Pages: https://varolemin.github.io/varol/yemek/ . `dist/` git'e girmez.
 
+**Sertifika (13.11.2026 openssl ile doğrulandı):** `*.github.io` → Let's Encrypt YR1 → Root YR → ISRG Root X1, TLS 1.2 var, HTTP 301 ile HTTPS'e yönleniyor (HSTS). iOS 9 ISRG Root X1'e güvenmez → iPad'e bir kez kök sertifika yüklenmeli: Safari'de `http://x1.i.lencr.org/` (SHA-256 96:BC:EC:06…08:C6) → profili yükle.
+
 ## Görsel kimlik
 Adaçayı yeşili palet (parlak yeşil yok), vurgu soluk gül rengi; arka planda çok hafif inline SVG dal/çiçek süsleri. Telefonda (≤760px) tek sütun düzen.
 
