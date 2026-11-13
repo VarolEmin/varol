@@ -133,7 +133,6 @@ def uri(s):
 
 def blok():
     g = [uri(dal(GUNDUZ)), uri(kume(GUNDUZ)), uri(cimen(GUNDUZ))]
-    n = [uri(dal(GECE)), uri(kume(GECE)), uri(cimen(GECE))]
     return """/* SUSLER-BASLA — scripts/susler.py üretir, elle düzenleme */
 body {
   background-image: %s, %s, %s;
@@ -141,18 +140,14 @@ body {
   background-position: right 14px top 268px, left 8px top 6px, left 2px top 430px;
   background-size: 380px 296px, 230px 130px, 300px 96px;
 }
-body.gece {
-  background-image: %s, %s, %s;
-}
 @media (max-width: 760px) {
   body {
     background-image: %s, %s;
     background-position: right -14px top -10px, left 0 top 0;
     background-size: 170px 132px, 150px 85px;
   }
-  body.gece { background-image: %s, %s; }
 }
-/* SUSLER-BITIR */""" % tuple(g + n + [g[0], g[1], n[0], n[1]])
+/* SUSLER-BITIR */""" % tuple(g + [g[0], g[1]])
 
 
 def main():

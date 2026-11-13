@@ -86,14 +86,15 @@ Saf ES5, DOM'a dokunmaz, UMD (tarayıcı + jsc testleri). Yalnızca akşam yeme�
 
 - Duvar görünümü: üstte bugünün tarihi + bugünün yemeği çok büyük; altında 7 gün, bugün vurgulu, geçmiş soluk. 1024×768 yatayda kaydırmasız. Dokunma hedefi ≥ 44px.
 - "Haftanın planını yap": haftayı dağıtır, kaydeder; elle değişmiş gün varsa sayfa içi onay: "Tamamını yeniden planla" / "Değişiklikleri koru" / "Vazgeç". ("Tümünü sıfırla" butonu kaldırıldı; döngü haftası ve "Yarın" satırı gösterilmez.)
+- Gün paneli ve Tercihler ekranının sol üstünde "‹ Geri" butonu.
 - Gün kartında tam gün adı + ↻ ikonu: panel açmadan yalnızca o günü yeniden seçer (elle sayılır).
 - Gün düzenleme paneli: Ana yemek `<select>` (önce aynı kategori, sonra diğerleri, optgroup) + "Bu günü yeniden seç"; Eşlik `<select>` ("Eşlik yok", o yemeğin kombinasyonları, sonra tüm çorba/karbonhidrat); kısayollar "Günü boşalt", "Dışarıda yiyeceğiz". Elle değişen günler yeniden üretimde korunur; "Tümünü sıfırla" var.
 - Yeniden dağıtımda geçmiş günler (bugünden önceki) hiç değişmez.
 - "Bu hafta / Gelecek hafta" sekmesi (alışveriş planı için); açılışta hep "Bu hafta".
-- Test parametreleri: `?tarih=YYYY-MM-DD&saat=HH` (bugünü ve saati taklit eder, yenileme zamanlayıcısını kapatır).
+- Test parametreleri: `?tarih=YYYY-MM-DD` (bugünü taklit eder, yenileme zamanlayıcısını kapatır).
 - O hafta plan yoksa otomatik üret. Gece 00:00'da sayfa yenilenir.
 - localStorage `yemekPlani.v1`; son 6 hafta saklanır.
-- 21:00–07:00 koyu, düşük parlaklık tema.
+- Tek tema: açık (koyu/gece tema kullanıcı isteğiyle 13.11.2026'da kaldırıldı; geri ekleme).
 - `apple-mobile-web-app-capable` meta.
 
 ## 6. Aşamalar

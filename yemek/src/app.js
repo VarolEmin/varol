@@ -212,7 +212,8 @@
   function tercihHtml() {
     var ED = etkinVeri(), DA = varsayilanAyar(), DW = varsayilanAgirlik();
     var h = '<div class="tercih' + (state.tercih ? ' acik' : '') + '"><div class="tercih-ic">' +
-      '<div class="tercih-ust"><div class="tercih-baslik">Tercihler</div>' +
+      '<div class="tercih-ust"><div class="tercih-sol"><button class="geri" data-eylem="tercih-kapat">' + IKON_GERI +
+      '<span>Geri</span></button><div class="tercih-baslik">Tercihler</div></div>' +
       '<button class="btn btn-ana tercih-kapat" data-eylem="tercih-kapat">Bitti</button></div>' +
       '<div class="tercih-not">Değişiklikler yeni planlarda geçerli olur. Bu haftaya uygulamak için “Haftanın planını yap”a bas.</div>';
     var i, k, a, cur, v;
@@ -454,6 +455,7 @@
     var date = E.addDays(monday, i);
     return '<div class="perde acik" data-eylem="kapat"></div>' +
       '<div class="panel acik">' +
+      '<button class="geri" data-eylem="kapat">' + IKON_GERI + '<span>Geri</span></button>' +
       '<div class="panel-baslik">' + E.GUNLER[i] + ', ' + date.getDate() + ' ' + E.AYLAR[date.getMonth()] + '</div>' +
       '<div class="panel-alt">Şablon: ' + esc(effCat(plan, i)) + (day.locked ? ' · elle değiştirildi' : '') + '</div>' +
       '<label class="alan-ad">Ana yemek</label>' +
@@ -493,6 +495,8 @@
   }
 
   // iOS 9: ↻ karakteri her fontta yok; ikon inline SVG.
+  var IKON_GERI = '<svg class="ikon-geri" width="12" height="20" viewBox="0 0 12 20" aria-hidden="true">' +
+    '<path d="M10 2L2 10l8 8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   var IKON_YENILE = '<svg class="ikon-yenile" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">' +
     '<path d="M13.2 8.4A5.2 5.2 0 1 1 11.6 4.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' +
     '<path d="M12.4 1.4v3.3H9.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -515,13 +519,10 @@
     applyTheme();
   }
 
+  // Koyu (gece) tema kullanıcı isteğiyle kaldırıldı: her zaman açık tema.
   function applyTheme() {
-    var h = hourNow();
-    var gece = (h >= 21 || h < 7);
     var c = ' ' + (root.className || '') + ' ';
-    var has = c.indexOf(' gece ') >= 0;
-    if (gece && !has) { root.className = (root.className ? root.className + ' ' : '') + 'gece'; }
-    if (!gece && has) { root.className = c.replace(' gece ', ' ').replace(/^\s+|\s+$/g, ''); }
+    if (c.indexOf(' gece ') >= 0) { root.className = c.replace(' gece ', ' ').replace(/^\s+|\s+$/g, ''); }
   }
 
   // ---- Değişiklikler ----
