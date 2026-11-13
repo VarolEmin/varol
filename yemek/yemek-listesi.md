@@ -32,9 +32,9 @@ Haftalık akşam yemeği planının veri kaynağı. Yemek eklemek, çıkarmak ve
 | İzmir köfte | Et | Her mevsim | Normal | Hayır | Hayır | Salçalı |  |
 | Et sote / tas kebabı | Et | Her mevsim | Seyrek | Hayır | Hayır | Salçalı |  |
 | Belen tava | Et | Her mevsim | Normal | Hayır | Hayır | Salçalı |  |
-| Hamsi tava | Balık | Her mevsim | Normal | Hayır | Hayır | Sade | Dondurulmuşu her mevsim |
 | Palamut | Balık | Eylül–Kasım | Normal | Hayır | Hayır | Sade |  |
-| Fırında uskumru | Balık | Her mevsim | Seyrek | Hayır | Hayır | Sade | Dondurulmuşu her mevsim |
+| Çinekop | Balık | Eylül–Aralık | Normal | Hayır | Hayır | Sade |  |
+| Minekop | Balık | Ekim–Mart | Normal | Hayır | Hayır | Sade |  |
 | Fırında levrek / çipura | Balık | Her mevsim | Normal | Hayır | Hayır | Sade |  |
 | Fırında somon | Balık | Her mevsim | Sık | Hayır | Hayır | Sade |  |
 | Pizza | Pratik | Her mevsim | Seyrek | Hayır | Hayır | Salçalı | Dondurulmuş veya ev yapımı |
@@ -90,9 +90,9 @@ Her ana yemeğin yanına gelebilecek çorba veya karbonhidratlar. Eşlikler boş
 | İzmir köfte | Pirinç pilavı | Şehriyeli pilav | Mercimek çorbası | Yayla çorbası |  |  |
 | Et sote / tas kebabı | Pirinç pilavı | Şehriyeli pilav | Patates püresi | Erişte | Mercimek çorbası |  |
 | Belen tava | Pirinç pilavı | Şehriyeli pilav | Mercimek çorbası | Yayla çorbası |  |  |
-| Hamsi tava | Mercimek çorbası | Ezogelin | Tarhana | Fırın patates |  |  |
 | Palamut | Mercimek çorbası | Ezogelin | Bulgur pilavı | Fırın patates |  |  |
-| Fırında uskumru | Mercimek çorbası | Tarhana | Bulgur pilavı | Fırın patates |  |  |
+| Çinekop | Mercimek çorbası | Ezogelin | Bulgur pilavı | Fırın patates |  |  |
+| Minekop | Mercimek çorbası | Ezogelin | Tarhana | Fırın patates |  |  |
 | Fırında levrek / çipura | Mercimek çorbası | Ezogelin | Domates çorbası | Fırın patates | Bulgur pilavı |  |
 | Fırında somon | Mercimek çorbası | Ezogelin | Pirinç pilavı | Fırın patates | Patates püresi |  |
 | Pizza |  |  |  |  |  | Tek başına |

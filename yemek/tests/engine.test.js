@@ -83,7 +83,8 @@ plans.forEach(function (p, i) {
   });
 });
 check('e) son 2 hafta tekrarı yok (' + checkedN + ' gün denetlendi, ' + relaxedN + ' gevşemiş)', errs.length === 0, errs.slice(0, 5).join(', '));
-check('e2) gevşeme nadir (<%10)', relaxedN < 0.10 * 364, String(relaxedN));
+// Yazın yalnızca 2 balık var (13.11.2026 kullanıcı kararı: tekrar kabul) -> eşik %15.
+check('e2) gevşeme nadir (<%15)', relaxedN < 0.15 * 364, String(relaxedN));
 
 // f) Dünden devam
 errs = [];
