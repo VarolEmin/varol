@@ -5,8 +5,6 @@
 
   var KEY = 'yemekPlani.v1';
   var DEVAM = 'Dünden devam';
-  var KISA_GUN = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
-  var KISA_AY = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
   var ANA_KATS = ['Sebze yemeği', 'Bakliyat', 'Tavuk', 'Et', 'Balık', 'Pratik', 'Salata bowl', 'Dışarıda', 'Yeni tarif'];
   var ESLIKSIZ = ['Salata bowl', 'Dışarıda', 'Yeni tarif'];
   var DISARIDA = 'Dışarıda yemek';
@@ -90,6 +88,8 @@
   })();
 
   function effCat(plan, i) {
+    var d = plan.days[i];
+    if (d.kaynakKategori) { return d.kaynakKategori; }
     var k = i;
     while (k > 0 && plan.days[k].kategori === DEVAM) { k--; }
     return plan.days[k].kategori;
@@ -130,24 +130,11 @@
       if (ad === DISARIDA) { eslik = 'Afiyet olsun'; }
       else if (day.eslik) { eslik = 'yanında <b>' + esc(day.eslik) + '</b>'; }
     }
-    // yarın
-    var yarin = '';
-    var yp, yday;
-    if (idx < 6) { yday = mp.days[idx + 1]; }
-    else {
-      yp = getPlan(E.addDays(E.mondayOf(t), 7), false);
-      yday = yp ? yp.days[0] : null;
-    }
-    if (yday && yday.ana) {
-      yarin = 'Yarın: <b>' + esc(yday.ana) + '</b>';
-      if (yday.eslik) { yarin += ' + ' + esc(yday.eslik); }
-    }
     return '<div class="bugun">' +
       '<div class="bugun-tarih">' + t.getDate() + ' ' + E.AYLAR[t.getMonth()] + ' ' + E.GUNLER[idx] +
       '<span class="bugun-etiket">Bu akşam</span></div>' +
       '<div class="' + cls + '">' + esc(txt) + '</div>' +
       '<div class="bugun-eslik"' + (eslik ? '' : ' style="display:none"') + '>' + eslik + '</div>' +
-      '<div class="bugun-yarin"' + (yarin ? '' : ' style="display:none"') + '>' + yarin + '</div>' +
       '</div>';
   }
 
@@ -167,8 +154,7 @@
       '<button class="sekme-btn' + (state.view === 1 ? ' aktif' : '') + '" data-eylem="gelecek-hafta">Gelecek hafta</button>' +
       '</div>' +
       '<button class="btn btn-ana" data-eylem="planla">Haftanın planını yap</button>' +
-      '<button class="btn btn-ikincil" data-eylem="sifirla">Tümünü sıfırla</button>' +
-      '<div class="dongu">' + rangeText(monday) + '<br>Döngü haftası ' + E.cycleWeek(monday) + ' / 4</div>' +
+      '<div class="dongu">' + rangeText(monday) + '</div>' +
       '</div></header>';
   }
 
@@ -187,12 +173,14 @@
       if (!day.ana) { cls += ' bos'; }
       var et = eslikText(day);
       h += '<li class="' + cls + '" data-gun="' + i + '">' +
-        '<div class="gun-ust"><span class="gun-ad">' + KISA_GUN[i] + '</span><span class="gun-tarih">' +
-        date.getDate() + ' ' + KISA_AY[date.getMonth()] + '</span></div>' +
+        '<div class="gun-ust"><span class="gun-ad">' + E.GUNLER[i] + '</span><span class="gun-tarih">' +
+        date.getDate() + ' ' + E.AYLAR[date.getMonth()] + '</span></div>' +
         '<div class="gun-yemek">' + (day.ana ? esc(day.ana) : 'Boş') + '</div>' +
         '<div class="gun-eslik' + (et.yok ? ' yok' : '') + '">' + esc(et.t) + '</div>' +
-        '<div class="gun-alt"><span class="gun-kategori">' + esc(day.kategori === DEVAM ? DEVAM : day.kategori) +
-        '</span><span class="gun-elle">elle</span></div></li>';
+        '<div class="gun-alt"><span class="gun-kategori">' + esc(day.kategori) +
+        '</span><span class="gun-elle">elle</span></div>' +
+        '<button class="gun-yenile" data-eylem="gun-yenile" data-gun="' + i + '" aria-label="Bu güne başka kombinasyon">' +
+        '<span class="gun-yenile-ikon">↻</span></button></li>';
     }
     return h + '</ul>';
   }
@@ -278,25 +266,13 @@
 
   function onayHtml(plan) {
     var o = state.onay;
-    if (!o) {
-      return '<div class="onay"><div class="onay-kutu"><div class="onay-baslik"></div><div class="onay-metin"></div>' +
-        '<div class="satir"><button class="btn btn-ikincil" data-eylem="onay-hayir">Vazgeç</button>' +
-        '<button class="btn btn-ana" data-eylem="onay-evet">Tamam</button></div></div></div>';
-    }
-    var b, m, e;
-    if (o === 'planla') {
-      b = 'Haftayı yeniden dağıt?';
-      m = 'Elle değiştirdiğin ' + countLocked(plan) + ' gün korunacak, diğer günler yeniden seçilecek.';
-      e = 'Evet, dağıt';
-    } else {
-      b = 'Tüm değişiklikler silinsin mi?';
-      m = 'Bu haftadaki elle yapılan değişiklikler silinir ve hafta baştan planlanır.';
-      e = 'Evet, sıfırla';
-    }
-    return '<div class="onay acik"><div class="onay-kutu"><div class="onay-baslik">' + esc(b) + '</div>' +
-      '<div class="onay-metin">' + esc(m) + '</div>' +
-      '<div class="satir"><button class="btn btn-ikincil" data-eylem="onay-hayir">Vazgeç</button>' +
-      '<button class="btn btn-ana" data-eylem="onay-evet">' + esc(e) + '</button></div></div></div>';
+    var kutu = '<div class="onay-baslik">' + (o ? 'Haftayı yeniden dağıt?' : '') + '</div>' +
+      '<div class="onay-metin">' + (o ? 'Elle değiştirdiğin ' + countLocked(plan) + ' gün var.' : '') + '</div>' +
+      '<div class="onay-butonlar">' +
+      '<button class="btn btn-ana" data-eylem="onay-tumu">Tamamını yeniden planla</button>' +
+      '<button class="btn btn-ikincil" data-eylem="onay-koru">Değişiklikleri koru</button>' +
+      '<button class="btn btn-ikincil" data-eylem="onay-hayir">Vazgeç</button></div>';
+    return '<div class="onay' + (o ? ' acik' : '') + '"><div class="onay-kutu">' + kutu + '</div></div>';
   }
 
   function countLocked(plan) {
@@ -400,16 +376,12 @@
       plan = viewPlan();
       if (countLocked(plan) > 0) { state.onay = 'planla'; render(); }
       else { regenerate(true); }
-    } else if (a === 'sifirla') {
-      state.onay = 'sifirla';
-      render();
+    } else if (a === 'onay-koru' || a === 'onay-tumu') {
+      state.onay = null;
+      regenerate(a === 'onay-koru');
     } else if (a === 'onay-hayir') {
       state.onay = null;
       render();
-    } else if (a === 'onay-evet') {
-      var o = state.onay;
-      state.onay = null;
-      regenerate(o === 'planla');
     } else if (a === 'kapat') {
       state.panel = -1;
       render();
@@ -436,6 +408,14 @@
     while (el && el !== app) {
       if (el.getAttribute) {
         var a = el.getAttribute('data-eylem');
+        if (a === 'gun-yenile') {
+          var gi = parseInt(el.getAttribute('data-gun'), 10);
+          if (gi >= 0 && gi < 7) {
+            reroll(viewPlan(), gi, true);
+            commit();
+          }
+          return;
+        }
         if (a) { onEylem(a); return; }
         var g = el.getAttribute('data-gun');
         if (g !== null && g !== '' && hasClass(el, 'gun')) {

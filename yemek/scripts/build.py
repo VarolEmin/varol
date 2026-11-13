@@ -19,7 +19,7 @@ AYLAR = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağu
 GUNLER = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"]
 DUNDEN = "Dünden devam"
 
-BASLIKLAR = {1: "yemekler", 2: "kombinasyonlar", 3: "sablon", 4: "agirliklar", 5: "kurallar"}
+BASLIKLAR = {1: "yemekler", 2: "kombinasyonlar", 3: "sablon", 4: "agirliklar", 5: "kurallar", 6: "esnek"}
 
 hatalar = []
 uyarilar = []
@@ -201,6 +201,36 @@ def agirliklari_isle(satirlar):
     return dict((s, ag[s]) for s in SIKLIKLAR if s in ag)
 
 
+def esnek_isle(satirlar, sablon):
+    esnek = {}
+    for no, h in satirlar:
+        kat = hucre(h, 0)
+        if kat not in KATEGORILER:
+            hata(no, "Esnek Günler'de bilinmeyen kategori '%s'" % kat)
+            continue
+        if kat in esnek:
+            hata(no, "Esnek Günler'de tekrarlı kategori '%s'" % kat)
+            continue
+        yasak = []
+        for g in [p.strip() for p in hucre(h, 1).split(",")]:
+            if not g:
+                continue
+            if g not in GUNLER:
+                hata(no, "Esnek Günler'de bilinmeyen gün adı '%s' (%s)" % (g, kat))
+            elif GUNLER.index(g) not in yasak:
+                yasak.append(GUNLER.index(g))
+        esnek[kat] = {"yasak": sorted(yasak), "_satir": no}
+    for kat in esnek:
+        for hafta in sablon:
+            n = sum(1 for o in sablon[hafta] if o["kategori"] == kat)
+            if n > 1:
+                hata(esnek[kat]["_satir"], "esnek kategori '%s' şablonda hafta %s içinde %d kez geçiyor (en çok 1)"
+                     % (kat, hafta, n))
+    for kat in esnek:
+        esnek[kat].pop("_satir", None)
+    return esnek
+
+
 def ayda_mi(mevsim, ay):
     if mevsim is None:
         return True
@@ -259,12 +289,15 @@ def main():
 
     bol = parse_tablolar(args.input)
     for no in sorted(BASLIKLAR):
+        if no == 6:
+            continue  # isteğe bağlı (geriye uyum)
         if BASLIKLAR[no] not in bol:
             hata(1, "'## %d.' başlıklı tablo bulunamadı" % no)
     yemekler, _ = yemekleri_isle(bol.get("yemekler", []))
     komb = kombinasyonlari_isle(bol.get("kombinasyonlar", []), yemekler)
     sablon = sablonu_isle(bol.get("sablon", []))
     agirlik = agirliklari_isle(bol.get("agirliklar", []))
+    esnek = esnek_isle(bol.get("esnek", []), sablon)
 
     if hatalar:
         for e in hatalar:
@@ -276,7 +309,8 @@ def main():
     for u in uyarilar:
         sys.stderr.write(u + "\n")
 
-    veri = {"yemekler": yemekler, "kombinasyonlar": komb, "sablon": sablon, "agirliklar": agirlik}
+    veri = {"yemekler": yemekler, "kombinasyonlar": komb, "sablon": sablon, "agirliklar": agirlik,
+            "esnek": esnek}
     veri_json = json.dumps(veri, ensure_ascii=False)
     if not os.path.isdir(args.out):
         os.makedirs(args.out)

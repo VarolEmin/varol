@@ -15,7 +15,9 @@
   var DEVAM = 'Dünden devam';
   var ESLIKSIZ = ['Salata bowl', 'Dışarıda', 'Yeni tarif'];
   var PRATIK_GUNLERI = ['Sebze yemeği', 'Bakliyat', 'Tavuk', 'Et'];
-  var DEFAULT_W = { 'Sık': 3, 'Normal': 2, 'Seyrek': 1, 'Kapalı': 0 };
+  var PRATIK_KATSAYI = 0.15;
+  var SEYREK_BEKLEME_HAFTA = 6;
+  var DEFAULT_W = { 'Sık': 4, 'Normal': 2, 'Seyrek': 1, 'Kapalı': 0 };
 
   function pad2(n) { return n < 10 ? '0' + n : String(n); }
 
@@ -146,12 +148,96 @@
     return null;
   }
 
+  // ---- Esnek yerleşim ----
+
+  function splitUnits(tmpl) {
+    var units = [];
+    for (var i = 0; i < tmpl.length; i++) {
+      if (tmpl[i].kategori === DEVAM && units.length) {
+        units[units.length - 1].push(tmpl[i].kategori);
+      } else {
+        units.push([tmpl[i].kategori]);
+      }
+    }
+    return units;
+  }
+
+  // Şablonu yerleşmiş düzene çevirir: [{ kategori, kaynakKategori }]
+  function layoutWeek(data, tmpl, monday, counter) {
+    var esnek = data.esnek || {};
+    var units = splitUnits(tmpl);
+    var fixed = [], flex = [], i;
+    for (i = 0; i < units.length; i++) {
+      if (esnek.hasOwnProperty(units[i][0])) { flex.push(units[i]); } else { fixed.push(units[i]); }
+    }
+    var order = units;
+    if (flex.length) {
+      var results = [];
+      var used = [];
+      for (i = 0; i < flex.length; i++) { used.push(false); }
+      var build = function (seq, fi, pos) {
+        var k;
+        if (fi === fixed.length && seq.length - fi === flex.length) { results.push(seq.slice()); return; }
+        if (fi < fixed.length) {
+          seq.push(fixed[fi]);
+          build(seq, fi + 1, pos + fixed[fi].length);
+          seq.pop();
+        }
+        for (k = 0; k < flex.length; k++) {
+          if (used[k]) { continue; }
+          var yasak = esnek[flex[k][0]].yasak || [];
+          var ok = true;
+          for (var d = 0; d < flex[k].length; d++) { if (yasak.indexOf(pos + d) >= 0) { ok = false; } }
+          if (!ok) { continue; }
+          used[k] = true;
+          seq.push(flex[k]);
+          build(seq, fi, pos + flex[k].length);
+          seq.pop();
+          used[k] = false;
+        }
+      };
+      build([], 0, 0);
+      if (results.length) {
+        var lr = mulberry32(hashStr(dateKey(monday) + ':yerlesim'));
+        // ilk esnek kategorinin (data.esnek sırası) gün indeksine göre grupla: önce gün, sonra yerleşim
+        var lead = null, ek = Object.keys(esnek);
+        for (i = 0; i < ek.length && lead === null; i++) {
+          for (var f = 0; f < flex.length; f++) { if (flex[f][0] === ek[i]) { lead = flex[f]; break; } }
+        }
+        var groups = {}, gkeys = [];
+        for (i = 0; i < results.length; i++) {
+          var st = 0;
+          for (var u = 0; results[i][u] !== lead; u++) { st += results[i][u].length; }
+          if (!groups.hasOwnProperty(st)) { groups[st] = []; gkeys.push(st); }
+          groups[st].push(results[i]);
+        }
+        gkeys.sort(function (x, y) { return x - y; });
+        var grp = groups[gkeys[Math.floor(lr() * gkeys.length)]];
+        order = grp[Math.floor(lr() * grp.length)];
+      }
+    }
+    var out = [];
+    for (i = 0; i < order.length; i++) {
+      for (var j = 0; j < order[i].length; j++) {
+        out.push({ kategori: order[i][j], kaynakKategori: order[i][0] });
+      }
+    }
+    return out;
+  }
+
   // ---- Gün seçimi ----
 
   function effCategory(tmpl, i) {
     var k = i;
     while (k > 0 && tmpl[k].kategori === DEVAM) { k--; }
     return tmpl[k].kategori;
+  }
+
+  function layoutFromDays(days) {
+    var t = [];
+    for (var i = 0; i < days.length; i++) { t.push({ kategori: days[i].kategori }); }
+    for (i = 0; i < t.length; i++) { t[i].kaynakKategori = effCategory(t, i); }
+    return t;
   }
 
   function usedNames(days, skip) {
@@ -172,8 +258,10 @@
     return false;
   }
 
-  function last2Names(history, monday) {
-    var keys = [dateKey(addDays(monday, -7)), dateKey(addDays(monday, -14))];
+  // son n haftada (history'de var olan kadarıyla) çıkan ana yemekler
+  function lastNames(history, monday, n) {
+    var keys = [];
+    for (var w = 1; w <= n; w++) { keys.push(dateKey(addDays(monday, -7 * w))); }
     var m = {};
     var h = history || [];
     for (var i = 0; i < h.length; i++) {
@@ -184,6 +272,8 @@
     }
     return m;
   }
+
+  function last2Names(history, monday) { return lastNames(history, monday, 2); }
 
   // ctx: { monday, tmpl, days, last2, tavukHaftasi }
   function pickAna(data, ctx, i, cat, rng, avoid, allowPratik) {
@@ -203,7 +293,7 @@
         if (tavukBonus && y.tavuklu) { w = w * 2; }
         cands.push({ y: y, w: w });
       } else if (allowPratik && y.kategori === 'Pratik') {
-        cands.push({ y: y, w: w * hafta });
+        cands.push({ y: y, w: w * PRATIK_KATSAYI * hafta });
       }
     }
     var chosen = usedNames(ctx.days, i);
@@ -211,7 +301,7 @@
       var pool = [];
       for (k = 0; k < cands.length; k++) {
         var n = cands[k].y.ad;
-        if (stage < 1 && ctx.last2[n]) { continue; }
+        if (stage < 1 && (ctx.last2[n] || (cands[k].y.siklik === 'Seyrek' && ctx.lastSeyrek[n]))) { continue; }
         if (stage < 2 && chosen[n]) { continue; }
         pool.push(cands[k]);
       }
@@ -259,14 +349,13 @@
 
   function emptyDay(monday, i, tmpl) {
     var d = addDays(monday, i);
-    return { tarih: dateKey(d), gun: GUNLER[i], kategori: tmpl[i].kategori, ana: null, eslik: null, locked: false, relaxed: false };
+    return { tarih: dateKey(d), gun: GUNLER[i], kategori: tmpl[i].kategori, kaynakKategori: tmpl[i].kaynakKategori, ana: null, eslik: null, locked: false, relaxed: false };
   }
 
-  function makeCtx(data, monday, history, days) {
-    var tmpl = data.sablon[String(cycleWeek(monday))];
+  function makeCtx(data, monday, history, days, tmpl) {
     var tavuk = false;
     for (var i = 0; i < tmpl.length; i++) { if (tmpl[i].kategori === 'Tavuk') { tavuk = true; } }
-    return { monday: monday, tmpl: tmpl, days: days, last2: last2Names(history, monday), tavukHaftasi: tavuk };
+    return { monday: monday, tmpl: tmpl, days: days, last2: last2Names(history, monday), lastSeyrek: lastNames(history, monday, SEYREK_BEKLEME_HAFTA), tavukHaftasi: tavuk };
   }
 
   function planWeek(data, monday, opts) {
@@ -274,7 +363,7 @@
     monday = mondayOf(monday);
     var counter = opts.counter || 0;
     var locked = opts.locked || {};
-    var tmpl = data.sablon[String(cycleWeek(monday))];
+    var tmpl = layoutWeek(data, data.sablon[String(cycleWeek(monday))], monday, counter);
     var days = [];
     var i;
     for (i = 0; i < 7; i++) {
@@ -287,7 +376,7 @@
       }
       days.push(d);
     }
-    var ctx = makeCtx(data, monday, opts.history, days);
+    var ctx = makeCtx(data, monday, opts.history, days, tmpl);
     var rng = mulberry32(hashStr(dateKey(monday) + ':' + counter));
     for (i = 0; i < 7; i++) {
       if (days[i].locked) { continue; }
@@ -305,11 +394,12 @@
     var n = (plan.rerollN || 0) + 1;
     var days = [];
     var i;
+    var lay = layoutFromDays(plan.days);
     for (i = 0; i < 7; i++) {
       var s = plan.days[i];
-      days.push({ tarih: s.tarih, gun: s.gun, kategori: s.kategori, ana: s.ana, eslik: s.eslik, locked: !!s.locked, relaxed: !!s.relaxed });
+      days.push({ tarih: s.tarih, gun: s.gun, kategori: s.kategori, kaynakKategori: s.kaynakKategori || lay[i].kaynakKategori, ana: s.ana, eslik: s.eslik, locked: !!s.locked, relaxed: !!s.relaxed });
     }
-    var ctx = makeCtx(data, monday, opts.history, days);
+    var ctx = makeCtx(data, monday, opts.history, days, lay);
     var rng = mulberry32(hashStr(plan.monday + ':' + plan.counter + ':r:' + dayIndex + ':' + n));
     var old = days[dayIndex].ana;
     var oldEslik = days[dayIndex].eslik;

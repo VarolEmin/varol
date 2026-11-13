@@ -138,7 +138,7 @@ Her ana yemeğin yanına gelebilecek çorba veya karbonhidratlar. Eşlikler boş
 
 | Sıklık | Çıkma şansı (kat) |
 |---|---|
-| Sık | 3 |
+| Sık | 4 |
 | Normal | 2 |
 | Seyrek | 1 |
 | Kapalı | 0 |
@@ -148,11 +148,21 @@ Her ana yemeğin yanına gelebilecek çorba veya karbonhidratlar. Eşlikler boş
 | Kural | Açıklama |
 |---|---|
 | Mevsim | Bugünün ayı yemeğin mevsim aralığında değilse yemek seçilmez. Eşlikler için de geçerli. |
-| Tekrar | Son 2 haftada çıkan ana yemek tekrar seçilmez (seçenek kalmazsa serbest). |
+| Tekrar | Son 2 haftada çıkan ana yemek tekrar seçilmez. Sıklığı Seyrek olan ana yemek son 6 haftada çıktıysa seçilmez (seçenek kalmazsa ikisi de serbest). |
 | Dünden devam | Önceki günün ana yemeği tekrar gelir, yanındaki eşlik farklı seçilir. |
 | Eşlik | Eşlik yalnızca Kombinasyonlar sayfasındaki seçeneklerden gelir. Boş satır = tek başına. |
 | Tavuk haftası | Haftada Tavuk günü varsa, Sebze/Bakliyat seçiminde “Tavuklu olabilir” işaretli yemekler öne alınır. |
 | Tavuk + tavuk | Tavuklu ana yemeğin yanına tavuklu çorba gelmez. |
 | Hafta döngüsü | Haftalık Şablon 4 haftalık döner; hangi haftada olunduğu tarihten hesaplanır. |
+| Esnek günler | Şablondaki Balık ve Dışarıda günleri o güne sabit değildir; Esnek Günler tablosuna göre her hafta rastgele bir güne yerleşir. "Dünden devam" çiftleri bölünmez. |
 | Değişiklik | Plan oluşturulduktan sonra her günün ana yemeği ve eşliği elle değiştirilebilir veya silinebilir. |
-| Pratik yemekler | Pizza, hamburger, mantı, kebap, fırın makarna için ayrı gün yok. Sebze, Bakliyat, Tavuk ve Et günlerinde kendi sıklığıyla aday olurlar; hafta sonu günlerinde şansları 2 katıdır. Haftada en fazla 1 tane çıkar. |
+| Pratik yemekler | Pizza, hamburger, mantı, kebap, fırın makarna için ayrı gün yok. Sebze, Bakliyat, Tavuk ve Et günlerinde aday olurlar ama şansları düşük tutulur (ayda yaklaşık 1); hafta sonu günlerinde 2 katıdır. Haftada en fazla 1 tane çıkar. |
+
+## 6. Esnek Günler
+
+Şablonda bu kategorilerin yazdığı gün yalnızca "o hafta 1 tane var" demektir; gün her hafta rastgele seçilir. Yasak günlere hiç gelmez.
+
+| Kategori | Yasak günler |
+|---|---|
+| Balık | Çarşamba, Cuma |
+| Dışarıda |  |

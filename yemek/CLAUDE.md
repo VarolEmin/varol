@@ -37,7 +37,7 @@ Bu Mac'te Node yok ve kurulmayacak. Yalnızca sistemde hazır olanlar:
 
 Komutlar (`yemek/` içinden):
 - `python3 scripts/build.py` → doğrular, `dist/index.html` üretir.
-- `python3 scripts/test.py` → `tests/engine.test.js`'i jsc ile çalıştırır.
+- `python3 scripts/test.py` → `tests/engine.test.js`'i jsc ile çalıştırır; sonda FREKANS RAPORU basar (ağırlık değişikliklerinde buna bak).
 - `python3 scripts/check.py` → tarayıcı JS'i (inline dahil) için ES5 yasaklı sözdizimi/API taraması + jsc ile parse; CSS yasaklı özellik taraması.
 - Ekran görüntüsü: Claude uygulamasının tarayıcı paneli 1024×768'e ayarlanarak (Playwright yok); telefon için 375×812.
 - **Yayın:** `python3 scripts/build.py --yayin` → `yemek/index.html` + `yemek/yemek.appcache` (iOS 9 çevrimdışı önbellek, sürüm hash'li). Commit + push `main` → GitHub Pages: https://varolemin.github.io/varol/yemek/ . `dist/` git'e girmez.
@@ -45,7 +45,7 @@ Komutlar (`yemek/` içinden):
 **Sertifika (13.11.2026 openssl ile doğrulandı):** `*.github.io` → Let's Encrypt YR1 → Root YR → ISRG Root X1, TLS 1.2 var, HTTP 301 ile HTTPS'e yönleniyor (HSTS). iOS 9 ISRG Root X1'e güvenmez → iPad'e bir kez kök sertifika yüklenmeli: Safari'de `http://x1.i.lencr.org/` (SHA-256 96:BC:EC:06…08:C6) → profili yükle.
 
 ## Görsel kimlik
-Adaçayı yeşili palet (parlak yeşil yok), vurgu soluk gül rengi; arka planda çok hafif inline SVG dal/çiçek süsleri. Telefonda (≤760px) tek sütun düzen.
+Adaçayı yeşili palet (parlak yeşil yok), vurgu soluk gül rengi; arka planda çok hafif inline SVG dal/çiçek süsleri (kozmos, papatya, lavanta, damarlı yaprak) — `python3 scripts/susler.py` üretir, style.css'te SUSLER bloğunu elle düzenleme. "Dünden devam" günlerinde yemek adı bilerek soluk. Telefonda (≤760px) tek sütun düzen.
 
 ## 3. Veri
 
@@ -61,10 +61,11 @@ Saf ES5, DOM'a dokunmaz, UMD (tarayıcı + jsc testleri). Yalnızca akşam yeme�
 
 1. **Hafta döngüsü:** sabit `ANCHOR = 16.11.2026 Pazartesi = Hafta 1`. Döngü haftası = ((hafta farkı mod 4) + 4) mod 4 + 1 (öncesi tarihler de doğru).
 2. **Mevsim:** günün ayı; mevsim dışı ana yemek ve eşlik seçilmez.
-3. **Aday havuzu:** kategori tutar, Kapalı değil, mevsiminde, bu hafta seçilmemiş, son 2 haftada çıkmamış. Boşsa önce "son 2 hafta", sonra "bu hafta" kuralı gevşer.
-4. **Seçim:** sıklık ağırlıklı rastgele (Sık 3, Normal 2, Seyrek 1, Kapalı 0 — tablodan okunur).
+3. **Aday havuzu:** kategori tutar, Kapalı değil, mevsiminde, bu hafta seçilmemiş, son 2 haftada çıkmamış; Seyrek ise son 6 haftada çıkmamış (`SEYREK_BEKLEME_HAFTA`). Boşsa önce bu iki tekrar kuralı birlikte, sonra "bu hafta" kuralı gevşer.
+4. **Seçim:** sıklık ağırlıklı rastgele (Sık 4, Normal 2, Seyrek 1, Kapalı 0 — tablodan okunur).
+   **Esnek günler** (md tablo 6): Balık ve Dışarıda şablondaki güne sabit değil. Şablon birimlere ayrılır (gün + ardındaki "Dünden devam" = bölünmez çift), esnek birimler kalan dizinin boşluklarına yerleşir; Balık Çarşamba/Cuma'ya gelmez. Önce Balık günü eşit olasılıkla seçilir. Yerleşim tohumu yalnızca pazartesi tarihi → bir haftanın gün düzeni yeniden planlamada değişmez. `plan.days[i].kaynakKategori` devam gününün ait olduğu kategori.
 5. **Dünden devam:** önceki günün ana yemeği gelir, yalnızca "2 gün yenir = Evet" ise; değilse önceki günün şablon kategorisinden yeni yemek. Eşlik önceki günden farklı; mümkünse türü de değişir (çorba ↔ karbonhidrat).
-6. **Pratik yemekler:** kendi günleri yok. Sebze/Bakliyat/Tavuk/Et günlerinde havuza katılır, yalnızca ertesi gün "Dünden devam" değilse. Cumartesi/pazar ağırlık ×2. Haftada en fazla 1.
+6. **Pratik yemekler:** kendi günleri yok. Sebze/Bakliyat/Tavuk/Et günlerinde havuza katılır, yalnızca ertesi gün "Dünden devam" değilse. Ağırlık × `PRATIK_KATSAYI` (0.15), Cumartesi/pazar ×2. Haftada en fazla 1 (hedef: haftaların ~%25'i).
 7. **Tavuk haftası:** o hafta şablonda Tavuk günü varsa Sebze/Bakliyat seçiminde "Tavuklu olabilir = Evet" ağırlığı ×2.
 8. **Eşlik:** yalnızca Kombinasyonlar'dan; mevsiminde ve Kapalı olmayanlar, sıklık ağırlıklı. Güvenlik ağı:
    - **Tavuk kategorisindeki** ana yemeğe tavuklu çorba (Çorba + Tavuklu olabilir = Evet) gelmez. (Kullanıcı kararı: kural yalnızca Tavuk kategorisi için; tavuklu olabilir sebze/bakliyata uygulanmaz.)
@@ -75,7 +76,8 @@ Saf ES5, DOM'a dokunmaz, UMD (tarayıcı + jsc testleri). Yalnızca akşam yeme�
 ## 5. Arayüz (`src/app.js`, `src/style.css`)
 
 - Duvar görünümü: üstte bugünün tarihi + bugünün yemeği çok büyük; altında 7 gün, bugün vurgulu, geçmiş soluk. 1024×768 yatayda kaydırmasız. Dokunma hedefi ≥ 44px.
-- "Haftanın planını yap": haftayı dağıtır, kaydeder; elle değişmiş gün varsa sayfa içi onay.
+- "Haftanın planını yap": haftayı dağıtır, kaydeder; elle değişmiş gün varsa sayfa içi onay: "Tamamını yeniden planla" / "Değişiklikleri koru" / "Vazgeç". ("Tümünü sıfırla" butonu kaldırıldı; döngü haftası ve "Yarın" satırı gösterilmez.)
+- Gün kartında tam gün adı + ↻ ikonu: panel açmadan yalnızca o günü yeniden seçer (elle sayılır).
 - Gün düzenleme paneli: Ana yemek `<select>` (önce aynı kategori, sonra diğerleri, optgroup) + "Bu günü yeniden seç"; Eşlik `<select>` ("Eşlik yok", o yemeğin kombinasyonları, sonra tüm çorba/karbonhidrat); kısayollar "Günü boşalt", "Dışarıda yiyeceğiz". Elle değişen günler yeniden üretimde korunur; "Tümünü sıfırla" var.
 - Yeniden dağıtımda geçmiş günler (bugünden önceki) hiç değişmez.
 - "Bu hafta / Gelecek hafta" sekmesi (alışveriş planı için); açılışta hep "Bu hafta".
