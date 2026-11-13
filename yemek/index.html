@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="tr" manifest="yemek.appcache">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Yemek Planı</title>
+<style>
+/* Yemek Planı — iPad mini 1 / iOS 9 Safari.
+   Kurallar: Flexbox + -webkit- önekleri. Grid, gap, CSS değişkeni, vh, object-fit, sticky YOK. */
+
+* { -webkit-box-sizing: border-box; box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: #f1f4eb;
+  color: #22302a;
+  font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-user-select: none;
+  user-select: none;
+  overflow-x: hidden;
+}
+button, select { font-family: inherit; }
+button {
+  -webkit-appearance: none;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* ---------- Sayfa iskeleti ---------- */
+.app {
+  height: 100%;
+  min-height: 600px;
+  padding: 26px 30px 22px;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-transition: background-color .6s, color .6s;
+  transition: background-color .6s, color .6s;
+}
+
+/* ---------- Üst: bu akşam ---------- */
+.ust {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: flex-start;
+  align-items: flex-start;
+  -webkit-flex: 1 1 auto;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.bugun {
+  -webkit-flex: 1 1 auto;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-right: 28px;
+  -webkit-align-self: stretch;
+  align-self: stretch;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-justify-content: center;
+  justify-content: center;
+  padding-bottom: 10px;
+}
+.bugun-tarih {
+  font-size: 22px;
+  font-weight: 600;
+  color: #4f6f4c;
+  letter-spacing: .3px;
+}
+.bugun-etiket {
+  display: inline-block;
+  margin-left: 12px;
+  padding: 3px 11px 4px;
+  border-radius: 13px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #fff;
+  background: #5e7f59;
+  vertical-align: 3px;
+}
+.bugun-yemek {
+  margin-top: 16px;
+  font-size: 104px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -3px;
+  color: #22302a;
+}
+.bugun-yemek.uzun { font-size: 80px; letter-spacing: -2px; }
+.bugun-yemek.cok-uzun { font-size: 64px; letter-spacing: -1.5px; }
+.bugun-yemek.bos { color: #b8ab99; font-weight: 600; }
+.bugun-eslik {
+  margin-top: 18px;
+  font-size: 40px;
+  font-weight: 300;
+  color: #5f6e60;
+}
+.bugun-eslik b { font-weight: 600; color: #a5636b; }
+.bugun-yarin {
+  margin-top: 28px;
+  font-size: 19px;
+  color: #879386;
+}
+.bugun-yarin b { font-weight: 600; color: #4a5a4c; }
+
+/* Sağ: eylemler */
+.eylemler {
+  width: 236px;
+  -webkit-flex: 0 0 236px;
+  flex: 0 0 236px;
+}
+.sekme {
+  display: -webkit-flex;
+  display: flex;
+  padding: 4px;
+  border-radius: 14px;
+  background: #e2e9d9;
+  margin-bottom: 12px;
+}
+.sekme-btn {
+  -webkit-flex: 1 1 0;
+  flex: 1 1 0;
+  min-height: 44px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #6d7b6c;
+}
+.sekme-btn.aktif {
+  background: #fbfcf7;
+  color: #22302a;
+  -webkit-box-shadow: 0 1px 3px rgba(40, 70, 40, .16);
+  box-shadow: 0 1px 3px rgba(40, 70, 40, .16);
+}
+.btn {
+  display: block;
+  min-height: 52px;
+  padding: 0 18px;
+  border-radius: 14px;
+  font-size: 17px;
+  font-weight: 600;
+  text-align: center;
+}
+.btn-ana {
+  background: #5e7f59;
+  color: #fff;
+  -webkit-box-shadow: 0 3px 0 #46613f;
+  box-shadow: 0 3px 0 #46613f;
+}
+.btn-ana:active { -webkit-transform: translateY(2px); transform: translateY(2px); -webkit-box-shadow: 0 1px 0 #46613f; box-shadow: 0 1px 0 #46613f; }
+.btn-ikincil {
+  background: transparent;
+  color: #5f6e60;
+  border: 2px solid #d1dbc6;
+}
+.btn-ikincil:active { background: #e8eee0; }
+.btn-metin {
+  background: transparent;
+  color: #4f6f4c;
+  min-height: 44px;
+  font-size: 16px;
+  text-decoration: underline;
+}
+.eylemler .btn { width: 100%; margin-bottom: 10px; }
+.dongu {
+  margin-top: 4px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #8f9b8e;
+  text-align: center;
+}
+
+/* ---------- Alt: hafta ---------- */
+.hafta {
+  list-style: none;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex: 0 0 auto;
+  flex: 0 0 auto;
+  margin-top: 18px;
+}
+.gun {
+  position: relative;
+  -webkit-flex: 1 1 0;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 226px;
+  margin-left: 10px;
+  padding: 14px 12px 12px;
+  border-radius: 16px;
+  background: #fbfcf7;
+  border: 2px solid #dfe7d5;
+  cursor: pointer;
+  overflow: hidden;
+  -webkit-transition: opacity .3s;
+  transition: opacity .3s;
+}
+.gun:first-child { margin-left: 0; }
+.gun:active { background: #eef3e7; }
+.gun-ust {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  -webkit-align-items: baseline;
+  align-items: baseline;
+}
+.gun-ad {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #4f6f4c;
+}
+.gun-tarih { font-size: 13px; color: #98a397; }
+.gun-yemek {
+  margin-top: 14px;
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 700;
+  color: #22302a;
+  word-wrap: break-word;
+}
+.gun-eslik {
+  margin-top: 8px;
+  font-size: 15px;
+  line-height: 1.3;
+  color: #66746a;
+}
+.gun-eslik:before { content: "+ "; color: #b97c84; font-weight: 700; }
+.gun-eslik.yok:before, .gun-eslik:empty:before { content: ""; }
+.gun-eslik.yok { color: #a9b3a6; font-style: italic; }
+.gun-alt {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 11px;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  -webkit-align-items: center;
+  align-items: center;
+}
+.gun-kategori { font-size: 12px; color: #98a397; }
+.gun-elle {
+  display: none;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: #5e7f59;
+}
+.gun.elle .gun-elle { display: inline; }
+.gun.devam .gun-yemek { color: #7f8b7f; }
+.gun.devam .gun-kategori { color: #8faa88; }
+.gun.bos .gun-yemek { color: #b5beb1; font-weight: 600; }
+.gun.gecmis { opacity: .42; }
+.gun.bugun {
+  background: #edf4e6;
+  border-color: #5e7f59;
+  -webkit-box-shadow: 0 4px 0 #5e7f59;
+  box-shadow: 0 4px 0 #5e7f59;
+}
+.gun.bugun .gun-ad { color: #5e7f59; }
+
+/* ---------- Düzenleme paneli ---------- */
+.perde {
+  display: none;
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  background: rgba(20, 35, 22, .42);
+  z-index: 10;
+}
+.perde.acik { display: block; }
+.panel {
+  display: none;
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: 452px;
+  padding: 26px 28px 24px;
+  background: #fbfcf7;
+  z-index: 11;
+  -webkit-box-shadow: -10px 0 34px rgba(20, 40, 20, .2);
+  box-shadow: -10px 0 34px rgba(20, 40, 20, .2);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.panel.acik { display: block; }
+.panel-baslik { font-size: 28px; font-weight: 700; letter-spacing: -.5px; }
+.panel-alt { margin-top: 4px; font-size: 15px; color: #8f9b8e; }
+.alan-ad {
+  display: block;
+  margin: 22px 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  color: #4f6f4c;
+}
+.secim { position: relative; }
+.secim:after {
+  content: "";
+  position: absolute;
+  right: 18px;
+  top: 22px;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 8px solid #4f6f4c;
+  pointer-events: none;
+}
+.secim select {
+  -webkit-appearance: none;
+  display: block;
+  width: 100%;
+  height: 54px;
+  padding: 0 44px 0 16px;
+  border: 2px solid #d1dbc6;
+  border-radius: 12px;
+  background: #fff;
+  color: #22302a;
+  font-size: 19px;
+  font-weight: 600;
+}
+.panel .btn-tam { width: 100%; margin-top: 10px; }
+.satir {
+  display: -webkit-flex;
+  display: flex;
+}
+.satir .btn { -webkit-flex: 1 1 0; flex: 1 1 0; font-size: 16px; padding: 0 8px; }
+.satir .btn + .btn { margin-left: 10px; }
+.panel .btn-metin { width: 100%; margin-top: 6px; }
+.panel-kapat { margin-top: 18px; }
+
+/* ---------- Sayfa içi onay ---------- */
+.onay {
+  display: none;
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  z-index: 20;
+  background: rgba(20, 35, 22, .5);
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+}
+.onay.acik { display: -webkit-flex; display: flex; }
+.onay-kutu {
+  width: 460px;
+  padding: 28px;
+  border-radius: 20px;
+  background: #fbfcf7;
+  -webkit-box-shadow: 0 16px 50px rgba(20, 40, 20, .3);
+  box-shadow: 0 16px 50px rgba(20, 40, 20, .3);
+}
+.onay-baslik { font-size: 24px; font-weight: 700; }
+.onay-metin { margin: 10px 0 22px; font-size: 17px; line-height: 1.45; color: #5f6e60; }
+
+
+/* ---------- Doğa süsleri (çok hafif, inline SVG) ---------- */
+body {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='240' viewBox='0 0 320 240'%3E%3Cg fill='none' stroke='%237d9b74' stroke-width='2' stroke-linecap='round' opacity='0.24'%3E%3Cpath d='M318 236 C250 200 200 152 150 122 S60 60 20 18'/%3E%3Cpath d='M200 150 C192 124 200 98 214 80'/%3E%3Cpath d='M120 100 C112 88 112 76 118 66'/%3E%3C/g%3E%3Cg fill='%238fae86' opacity='0.22'%3E%3Cellipse cx='270' cy='196' rx='22' ry='8' transform='rotate(-35 270 196)'/%3E%3Cellipse cx='246' cy='203' rx='20' ry='7' transform='rotate(25 246 203)'/%3E%3Cellipse cx='178' cy='121' rx='22' ry='8' transform='rotate(-40 178 121)'/%3E%3Cellipse cx='141' cy='134' rx='20' ry='7' transform='rotate(20 141 134)'/%3E%3Cellipse cx='102' cy='71' rx='20' ry='7' transform='rotate(-45 102 71)'/%3E%3Cellipse cx='76' cy='84' rx='18' ry='6' transform='rotate(15 76 84)'/%3E%3Cellipse cx='46' cy='37' rx='16' ry='6' transform='rotate(-50 46 37)'/%3E%3Cellipse cx='222' cy='108' rx='14' ry='5' transform='rotate(-70 222 108)'/%3E%3Cellipse cx='205' cy='120' rx='12' ry='4' transform='rotate(30 205 120)'/%3E%3C/g%3E%3Cg transform='translate(214 76) scale(1)'%3E%3Cg fill='%23d6a4ab' opacity='0.34'%3E%3Ccircle cx='0' cy='-7' r='6'/%3E%3Ccircle cx='6.7' cy='-2.2' r='6'/%3E%3Ccircle cx='4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-6.7' cy='-2.2' r='6'/%3E%3C/g%3E%3Ccircle r='3' fill='%23dcc27e' opacity='0.5'/%3E%3C/g%3E%3Cg transform='translate(18 17) scale(0.8)'%3E%3Cg fill='%23d6a4ab' opacity='0.34'%3E%3Ccircle cx='0' cy='-7' r='6'/%3E%3Ccircle cx='6.7' cy='-2.2' r='6'/%3E%3Ccircle cx='4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-6.7' cy='-2.2' r='6'/%3E%3C/g%3E%3Ccircle r='3' fill='%23dcc27e' opacity='0.5'/%3E%3C/g%3E%3Cg transform='translate(118 62) scale(0.6)'%3E%3Cg fill='%23d6a4ab' opacity='0.34'%3E%3Ccircle cx='0' cy='-7' r='6'/%3E%3Ccircle cx='6.7' cy='-2.2' r='6'/%3E%3Ccircle cx='4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-6.7' cy='-2.2' r='6'/%3E%3C/g%3E%3Ccircle r='3' fill='%23dcc27e' opacity='0.5'/%3E%3C/g%3E%3C/svg%3E"), url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='110' viewBox='0 0 240 110'%3E%3Cg fill='%238fae86' opacity='0.2'%3E%3Cellipse cx='40' cy='30' rx='14' ry='5' transform='rotate(-30 40 30)'/%3E%3Cellipse cx='58' cy='44' rx='12' ry='4' transform='rotate(40 58 44)'/%3E%3Cellipse cx='150' cy='22' rx='12' ry='4' transform='rotate(-60 150 22)'/%3E%3Cellipse cx='198' cy='70' rx='14' ry='5' transform='rotate(20 198 70)'/%3E%3Cellipse cx='110' cy='74' rx='10' ry='4' transform='rotate(-20 110 74)'/%3E%3C/g%3E%3Cg transform='translate(30 22) scale(0.7)'%3E%3Cg fill='%23d6a4ab' opacity='0.3'%3E%3Ccircle cx='0' cy='-7' r='6'/%3E%3Ccircle cx='6.7' cy='-2.2' r='6'/%3E%3Ccircle cx='4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-6.7' cy='-2.2' r='6'/%3E%3C/g%3E%3Ccircle r='3' fill='%23dcc27e' opacity='0.45'/%3E%3C/g%3E%3Cg transform='translate(168 36) scale(0.9)'%3E%3Cg fill='%23d6a4ab' opacity='0.3'%3E%3Ccircle cx='0' cy='-7' r='6'/%3E%3Ccircle cx='6.7' cy='-2.2' r='6'/%3E%3Ccircle cx='4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-6.7' cy='-2.2' r='6'/%3E%3C/g%3E%3Ccircle r='3' fill='%23dcc27e' opacity='0.45'/%3E%3C/g%3E%3Cg transform='translate(222 80) scale(0.6)'%3E%3Cg fill='%23d6a4ab' opacity='0.3'%3E%3Ccircle cx='0' cy='-7' r='6'/%3E%3Ccircle cx='6.7' cy='-2.2' r='6'/%3E%3Ccircle cx='4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-6.7' cy='-2.2' r='6'/%3E%3C/g%3E%3Ccircle r='3' fill='%23dcc27e' opacity='0.45'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: no-repeat, no-repeat;
+  background-position: right 18px top 300px, left 14px top 10px;
+  background-size: 360px 270px, 220px 101px;
+}
+body.gece {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='240' viewBox='0 0 320 240'%3E%3Cg fill='none' stroke='%2334482f' stroke-width='2' stroke-linecap='round' opacity='0.5'%3E%3Cpath d='M318 236 C250 200 200 152 150 122 S60 60 20 18'/%3E%3Cpath d='M200 150 C192 124 200 98 214 80'/%3E%3Cpath d='M120 100 C112 88 112 76 118 66'/%3E%3C/g%3E%3Cg fill='%233b5238' opacity='0.5'%3E%3Cellipse cx='270' cy='196' rx='22' ry='8' transform='rotate(-35 270 196)'/%3E%3Cellipse cx='246' cy='203' rx='20' ry='7' transform='rotate(25 246 203)'/%3E%3Cellipse cx='178' cy='121' rx='22' ry='8' transform='rotate(-40 178 121)'/%3E%3Cellipse cx='141' cy='134' rx='20' ry='7' transform='rotate(20 141 134)'/%3E%3Cellipse cx='102' cy='71' rx='20' ry='7' transform='rotate(-45 102 71)'/%3E%3Cellipse cx='76' cy='84' rx='18' ry='6' transform='rotate(15 76 84)'/%3E%3Cellipse cx='46' cy='37' rx='16' ry='6' transform='rotate(-50 46 37)'/%3E%3Cellipse cx='222' cy='108' rx='14' ry='5' transform='rotate(-70 222 108)'/%3E%3Cellipse cx='205' cy='120' rx='12' ry='4' transform='rotate(30 205 120)'/%3E%3C/g%3E%3Cg transform='translate(214 76) scale(1)'%3E%3Cg fill='%235a4246' opacity='0.55'%3E%3Ccircle cx='0' cy='-7' r='6'/%3E%3Ccircle cx='6.7' cy='-2.2' r='6'/%3E%3Ccircle cx='4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-6.7' cy='-2.2' r='6'/%3E%3C/g%3E%3Ccircle r='3' fill='%235c5236' opacity='0.6'/%3E%3C/g%3E%3Cg transform='translate(18 17) scale(0.8)'%3E%3Cg fill='%235a4246' opacity='0.55'%3E%3Ccircle cx='0' cy='-7' r='6'/%3E%3Ccircle cx='6.7' cy='-2.2' r='6'/%3E%3Ccircle cx='4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-6.7' cy='-2.2' r='6'/%3E%3C/g%3E%3Ccircle r='3' fill='%235c5236' opacity='0.6'/%3E%3C/g%3E%3Cg transform='translate(118 62) scale(0.6)'%3E%3Cg fill='%235a4246' opacity='0.55'%3E%3Ccircle cx='0' cy='-7' r='6'/%3E%3Ccircle cx='6.7' cy='-2.2' r='6'/%3E%3Ccircle cx='4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-6.7' cy='-2.2' r='6'/%3E%3C/g%3E%3Ccircle r='3' fill='%235c5236' opacity='0.6'/%3E%3C/g%3E%3C/svg%3E"), url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='110' viewBox='0 0 240 110'%3E%3Cg fill='%233b5238' opacity='0.45'%3E%3Cellipse cx='40' cy='30' rx='14' ry='5' transform='rotate(-30 40 30)'/%3E%3Cellipse cx='58' cy='44' rx='12' ry='4' transform='rotate(40 58 44)'/%3E%3Cellipse cx='150' cy='22' rx='12' ry='4' transform='rotate(-60 150 22)'/%3E%3Cellipse cx='198' cy='70' rx='14' ry='5' transform='rotate(20 198 70)'/%3E%3Cellipse cx='110' cy='74' rx='10' ry='4' transform='rotate(-20 110 74)'/%3E%3C/g%3E%3Cg transform='translate(30 22) scale(0.7)'%3E%3Cg fill='%235a4246' opacity='0.5'%3E%3Ccircle cx='0' cy='-7' r='6'/%3E%3Ccircle cx='6.7' cy='-2.2' r='6'/%3E%3Ccircle cx='4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-6.7' cy='-2.2' r='6'/%3E%3C/g%3E%3Ccircle r='3' fill='%235c5236' opacity='0.55'/%3E%3C/g%3E%3Cg transform='translate(168 36) scale(0.9)'%3E%3Cg fill='%235a4246' opacity='0.5'%3E%3Ccircle cx='0' cy='-7' r='6'/%3E%3Ccircle cx='6.7' cy='-2.2' r='6'/%3E%3Ccircle cx='4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-6.7' cy='-2.2' r='6'/%3E%3C/g%3E%3Ccircle r='3' fill='%235c5236' opacity='0.55'/%3E%3C/g%3E%3Cg transform='translate(222 80) scale(0.6)'%3E%3Cg fill='%235a4246' opacity='0.5'%3E%3Ccircle cx='0' cy='-7' r='6'/%3E%3Ccircle cx='6.7' cy='-2.2' r='6'/%3E%3Ccircle cx='4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-6.7' cy='-2.2' r='6'/%3E%3C/g%3E%3Ccircle r='3' fill='%235c5236' opacity='0.55'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* ---------- Gece teması (21:00–07:00) ---------- */
+body.gece { background-color: #0c100d; color: #a3ae9f; }
+.gece .bugun-tarih { color: #5f7d5a; }
+.gece .bugun-etiket { background: #2c3d2a; color: #a9bca3; }
+.gece .bugun-yemek { color: #aeb9a8; }
+.gece .bugun-yemek.bos { color: #404a40; }
+.gece .bugun-eslik { color: #6c776a; }
+.gece .bugun-eslik b { color: #9a767b; }
+.gece .bugun-yarin { color: #4f5a4e; }
+.gece .bugun-yarin b { color: #7d897b; }
+.gece .sekme { background: #151b16; }
+.gece .sekme-btn { color: #566155; }
+.gece .sekme-btn.aktif { background: #222b22; color: #adb8a8; -webkit-box-shadow: none; box-shadow: none; }
+.gece .btn-ana { background: #2c3d2a; color: #b9cbb2; -webkit-box-shadow: 0 3px 0 #1a2619; box-shadow: 0 3px 0 #1a2619; }
+.gece .btn-ikincil { border-color: #263026; color: #6c776a; }
+.gece .btn-ikincil:active { background: #151b16; }
+.gece .btn-metin { color: #5f7d5a; }
+.gece .dongu { color: #465046; }
+.gece .gun { background: #121712; border-color: #231e1a; }
+.gece .gun:active { background: #1a201a; }
+.gece .gun-ad { color: #5d7759; }
+.gece .gun-tarih, .gece .gun-kategori { color: #465046; }
+.gece .gun-yemek { color: #a3ae9f; }
+.gece .gun-eslik { color: #5c665a; }
+.gece .gun-eslik:before { color: #7d5f63; }
+.gece .gun.devam .gun-yemek { color: #6f7a6d; }
+.gece .gun.bos .gun-yemek { color: #353d34; }
+.gece .gun.gecmis { opacity: .35; }
+.gece .gun.bugun { background: #172216; border-color: #46613f; -webkit-box-shadow: 0 4px 0 #46613f; box-shadow: 0 4px 0 #46613f; }
+.gece .gun.bugun .gun-ad { color: #9a767b; }
+.gece .perde, .gece .onay { background: rgba(0, 0, 0, .6); }
+.gece .panel, .gece .onay-kutu { background: #151b16; color: #adb8a8; }
+.gece .panel-alt, .gece .onay-metin { color: #626c60; }
+.gece .alan-ad { color: #5f7d5a; }
+.gece .secim select { background: #0e120e; border-color: #2a332a; color: #b6c1b1; }
+.gece .secim:after { border-top-color: #5f7d5a; }
+
+/* ---------- Telefon / dar ekran (dikey) ---------- */
+@media (max-width: 760px) {
+  body {
+    background-position: right -18px top -6px, left 4px top 2px;
+    background-size: 150px 112px, 130px 60px;
+  }
+  .app { height: auto; min-height: 0; padding: 18px 16px 24px; }
+  .ust {
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    -webkit-align-items: stretch;
+    align-items: stretch;
+  }
+  .bugun { padding: 26px 0 6px; }
+  .bugun-tarih { font-size: 16px; }
+  .bugun-etiket { font-size: 12px; margin-left: 8px; vertical-align: 2px; }
+  .bugun-yemek { font-size: 52px; letter-spacing: -1.5px; margin-top: 10px; }
+  .bugun-yemek.uzun { font-size: 42px; letter-spacing: -1px; }
+  .bugun-yemek.cok-uzun { font-size: 34px; letter-spacing: -.5px; }
+  .bugun-eslik { font-size: 24px; margin-top: 10px; }
+  .bugun-yarin { font-size: 16px; margin-top: 16px; }
+  .eylemler {
+    width: auto;
+    -webkit-flex: 0 0 auto;
+    flex: 0 0 auto;
+    margin-top: 20px;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-wrap: wrap;
+    flex-wrap: wrap;
+  }
+  .eylemler .sekme, .eylemler .dongu { width: 100%; }
+  .eylemler .btn {
+    width: auto;
+    -webkit-flex: 1 1 0;
+    flex: 1 1 0;
+    font-size: 16px;
+    padding: 0 10px;
+  }
+  .eylemler .btn-ikincil { margin-left: 10px; }
+  .hafta {
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    margin-top: 14px;
+  }
+  .gun {
+    -webkit-flex: 0 0 auto;
+    flex: 0 0 auto;
+    height: auto;
+    min-height: 76px;
+    margin-left: 0;
+    margin-top: 8px;
+    padding: 12px 14px;
+  }
+  .gun:first-child { margin-top: 0; }
+  .gun-yemek { margin-top: 4px; font-size: 19px; }
+  .gun-eslik { margin-top: 3px; }
+  .gun-alt { position: static; margin-top: 6px; }
+  .gun.bugun { -webkit-box-shadow: 0 3px 0 #5e7f59; box-shadow: 0 3px 0 #5e7f59; }
+  .gece .gun.bugun { -webkit-box-shadow: 0 3px 0 #46613f; box-shadow: 0 3px 0 #46613f; }
+  .panel { width: 100%; padding: 20px 16px 24px; }
+  .panel-baslik { font-size: 24px; }
+  .onay-kutu { width: auto; margin: 0 16px; padding: 22px; }
+}
+
+</style>
+</head>
+<body>
+<script>window.YEMEK_DATA = {"yemekler": [{"ad": "Pırasa", "kategori": "Sebze yemeği", "mevsim": {"bas": 11, "son": 3}, "siklik": "Sık", "ikiGun": true, "tavuklu": false, "taban": "Zeytinyağlı", "not": ""}, {"ad": "Ispanak", "kategori": "Sebze yemeği", "mevsim": {"bas": 10, "son": 4}, "siklik": "Sık", "ikiGun": true, "tavuklu": false, "taban": "Salçalı", "not": "Pirinçli"}, {"ad": "Karnabahar yemeği", "kategori": "Sebze yemeği", "mevsim": {"bas": 11, "son": 3}, "siklik": "Normal", "ikiGun": true, "tavuklu": false, "taban": "Salçalı", "not": ""}, {"ad": "Bezelye", "kategori": "Sebze yemeği", "mevsim": null, "siklik": "Normal", "ikiGun": true, "tavuklu": true, "taban": "Salçalı", "not": "Dondurulmuşu her mevsim"}, {"ad": "Semizotu", "kategori": "Sebze yemeği", "mevsim": {"bas": 5, "son": 8}, "siklik": "Seyrek", "ikiGun": true, "tavuklu": false, "taban": "Salçalı", "not": ""}, {"ad": "Taze fasulye", "kategori": "Sebze yemeği", "mevsim": {"bas": 6, "son": 9}, "siklik": "Sık", "ikiGun": true, "tavuklu": false, "taban": "Salçalı", "not": ""}, {"ad": "Bamya", "kategori": "Sebze yemeği", "mevsim": {"bas": 7, "son": 9}, "siklik": "Seyrek", "ikiGun": true, "tavuklu": true, "taban": "Salçalı", "not": ""}, {"ad": "Biber / kabak dolması", "kategori": "Sebze yemeği", "mevsim": {"bas": 6, "son": 9}, "siklik": "Normal", "ikiGun": true, "tavuklu": false, "taban": "Salçalı", "not": ""}, {"ad": "Zeytinyağlı taze barbunya", "kategori": "Sebze yemeği", "mevsim": {"bas": 6, "son": 9}, "siklik": "Normal", "ikiGun": true, "tavuklu": false, "taban": "Zeytinyağlı", "not": ""}, {"ad": "Patates yemeği", "kategori": "Sebze yemeği", "mevsim": null, "siklik": "Normal", "ikiGun": true, "tavuklu": true, "taban": "Salçalı", "not": ""}, {"ad": "Kuru fasulye", "kategori": "Bakliyat", "mevsim": null, "siklik": "Sık", "ikiGun": true, "tavuklu": false, "taban": "Salçalı", "not": ""}, {"ad": "Nohut", "kategori": "Bakliyat", "mevsim": null, "siklik": "Sık", "ikiGun": true, "tavuklu": true, "taban": "Salçalı", "not": ""}, {"ad": "Yeşil mercimek yemeği", "kategori": "Bakliyat", "mevsim": null, "siklik": "Normal", "ikiGun": true, "tavuklu": false, "taban": "Salçalı", "not": ""}, {"ad": "Barbunya pilaki", "kategori": "Bakliyat", "mevsim": null, "siklik": "Seyrek", "ikiGun": true, "tavuklu": false, "taban": "Zeytinyağlı", "not": ""}, {"ad": "Tavuk sote", "kategori": "Tavuk", "mevsim": null, "siklik": "Sık", "ikiGun": false, "tavuklu": true, "taban": "Salçalı", "not": "Yazın biber-domates, kışın havuç"}, {"ad": "Fırında tavuk ve sebze", "kategori": "Tavuk", "mevsim": null, "siklik": "Sık", "ikiGun": false, "tavuklu": true, "taban": "Sade", "not": "Mevsim sebzesiyle"}, {"ad": "Tavuk şiş / ızgara", "kategori": "Tavuk", "mevsim": null, "siklik": "Normal", "ikiGun": false, "tavuklu": true, "taban": "Sade", "not": ""}, {"ad": "Fırında köfte ve patates", "kategori": "Et", "mevsim": null, "siklik": "Normal", "ikiGun": false, "tavuklu": false, "taban": "Salçalı", "not": ""}, {"ad": "İzmir köfte", "kategori": "Et", "mevsim": null, "siklik": "Normal", "ikiGun": false, "tavuklu": false, "taban": "Salçalı", "not": ""}, {"ad": "Et sote / tas kebabı", "kategori": "Et", "mevsim": null, "siklik": "Seyrek", "ikiGun": false, "tavuklu": false, "taban": "Salçalı", "not": ""}, {"ad": "Belen tava", "kategori": "Et", "mevsim": null, "siklik": "Normal", "ikiGun": false, "tavuklu": false, "taban": "Salçalı", "not": ""}, {"ad": "Hamsi tava", "kategori": "Balık", "mevsim": null, "siklik": "Normal", "ikiGun": false, "tavuklu": false, "taban": "Sade", "not": "Dondurulmuşu her mevsim"}, {"ad": "Palamut", "kategori": "Balık", "mevsim": {"bas": 9, "son": 11}, "siklik": "Normal", "ikiGun": false, "tavuklu": false, "taban": "Sade", "not": ""}, {"ad": "Fırında uskumru", "kategori": "Balık", "mevsim": null, "siklik": "Seyrek", "ikiGun": false, "tavuklu": false, "taban": "Sade", "not": "Dondurulmuşu her mevsim"}, {"ad": "Fırında levrek / çipura", "kategori": "Balık", "mevsim": null, "siklik": "Normal", "ikiGun": false, "tavuklu": false, "taban": "Sade", "not": ""}, {"ad": "Fırında somon", "kategori": "Balık", "mevsim": null, "siklik": "Sık", "ikiGun": false, "tavuklu": false, "taban": "Sade", "not": ""}, {"ad": "Pizza", "kategori": "Pratik", "mevsim": null, "siklik": "Seyrek", "ikiGun": false, "tavuklu": false, "taban": "Salçalı", "not": "Dondurulmuş veya ev yapımı"}, {"ad": "Hamburger", "kategori": "Pratik", "mevsim": null, "siklik": "Seyrek", "ikiGun": false, "tavuklu": false, "taban": "Sade", "not": "Dondurulmuş veya ev yapımı"}, {"ad": "Mantı", "kategori": "Pratik", "mevsim": null, "siklik": "Seyrek", "ikiGun": false, "tavuklu": false, "taban": "Yoğurtlu", "not": "Dondurulmuş veya ev yapımı"}, {"ad": "Kebap", "kategori": "Pratik", "mevsim": null, "siklik": "Seyrek", "ikiGun": false, "tavuklu": false, "taban": "Sade", "not": "Dondurulmuş veya ev yapımı"}, {"ad": "Fırın makarna", "kategori": "Pratik", "mevsim": null, "siklik": "Seyrek", "ikiGun": false, "tavuklu": false, "taban": "Sade", "not": ""}, {"ad": "Tavuklu salata bowl", "kategori": "Salata bowl", "mevsim": null, "siklik": "Normal", "ikiGun": false, "tavuklu": true, "taban": "Sade", "not": "Yeşillikler mevsime göre"}, {"ad": "Ton balıklı salata bowl", "kategori": "Salata bowl", "mevsim": null, "siklik": "Normal", "ikiGun": false, "tavuklu": false, "taban": "Sade", "not": "Yeşillikler mevsime göre"}, {"ad": "Nohutlu salata bowl", "kategori": "Salata bowl", "mevsim": null, "siklik": "Normal", "ikiGun": false, "tavuklu": false, "taban": "Sade", "not": "Yeşillikler mevsime göre"}, {"ad": "Hellimli salata bowl", "kategori": "Salata bowl", "mevsim": null, "siklik": "Normal", "ikiGun": false, "tavuklu": false, "taban": "Sade", "not": "Yeşillikler mevsime göre"}, {"ad": "Dışarıda yemek", "kategori": "Dışarıda", "mevsim": null, "siklik": "Normal", "ikiGun": false, "tavuklu": false, "taban": "", "not": ""}, {"ad": "Yeni bir tarif dene", "kategori": "Yeni tarif", "mevsim": null, "siklik": "Normal", "ikiGun": false, "tavuklu": false, "taban": "", "not": "Listede olmayan bir şey"}, {"ad": "Mercimek çorbası", "kategori": "Çorba", "mevsim": null, "siklik": "Sık", "ikiGun": false, "tavuklu": false, "taban": "Sade", "not": ""}, {"ad": "Ezogelin", "kategori": "Çorba", "mevsim": null, "siklik": "Normal", "ikiGun": false, "tavuklu": false, "taban": "Salçalı", "not": ""}, {"ad": "Yayla çorbası", "kategori": "Çorba", "mevsim": null, "siklik": "Normal", "ikiGun": false, "tavuklu": false, "taban": "Yoğurtlu", "not": ""}, {"ad": "Tarhana", "kategori": "Çorba", "mevsim": null, "siklik": "Seyrek", "ikiGun": false, "tavuklu": false, "taban": "Salçalı", "not": ""}, {"ad": "Sebze çorbası", "kategori": "Çorba", "mevsim": null, "siklik": "Normal", "ikiGun": false, "tavuklu": false, "taban": "Salçalı", "not": ""}, {"ad": "Şehriyeli tavuk suyu", "kategori": "Çorba", "mevsim": null, "siklik": "Normal", "ikiGun": false, "tavuklu": true, "taban": "Sade", "not": ""}, {"ad": "Domates çorbası", "kategori": "Çorba", "mevsim": {"bas": 6, "son": 9}, "siklik": "Normal", "ikiGun": false, "tavuklu": false, "taban": "Salçalı", "not": ""}, {"ad": "Pirinç pilavı", "kategori": "Karbonhidrat", "mevsim": null, "siklik": "Sık", "ikiGun": false, "tavuklu": false, "taban": "Sade", "not": ""}, {"ad": "Şehriyeli pilav", "kategori": "Karbonhidrat", "mevsim": null, "siklik": "Normal", "ikiGun": false, "tavuklu": false, "taban": "Sade", "not": ""}, {"ad": "Bulgur pilavı", "kategori": "Karbonhidrat", "mevsim": null, "siklik": "Sık", "ikiGun": false, "tavuklu": false, "taban": "Salçalı", "not": "Sebzeli"}, {"ad": "Makarna", "kategori": "Karbonhidrat", "mevsim": null, "siklik": "Normal", "ikiGun": false, "tavuklu": false, "taban": "Sade", "not": ""}, {"ad": "Erişte", "kategori": "Karbonhidrat", "mevsim": null, "siklik": "Seyrek", "ikiGun": false, "tavuklu": false, "taban": "Sade", "not": ""}, {"ad": "Fırın patates", "kategori": "Karbonhidrat", "mevsim": null, "siklik": "Normal", "ikiGun": false, "tavuklu": false, "taban": "Sade", "not": ""}, {"ad": "Patates püresi", "kategori": "Karbonhidrat", "mevsim": null, "siklik": "Normal", "ikiGun": false, "tavuklu": false, "taban": "Sade", "not": ""}], "kombinasyonlar": {"Pırasa": ["Mercimek çorbası", "Yayla çorbası", "Tarhana", "Bulgur pilavı", "Pirinç pilavı"], "Ispanak": ["Mercimek çorbası", "Yayla çorbası", "Erişte"], "Karnabahar yemeği": ["Mercimek çorbası", "Yayla çorbası", "Pirinç pilavı", "Şehriyeli pilav"], "Bezelye": ["Mercimek çorbası", "Pirinç pilavı", "Şehriyeli pilav", "Makarna"], "Semizotu": ["Mercimek çorbası", "Erişte", "Makarna"], "Taze fasulye": ["Mercimek çorbası", "Yayla çorbası", "Pirinç pilavı", "Şehriyeli pilav"], "Bamya": ["Mercimek çorbası", "Pirinç pilavı", "Şehriyeli pilav"], "Biber / kabak dolması": ["Mercimek çorbası", "Yayla çorbası", "Şehriyeli tavuk suyu"], "Zeytinyağlı taze barbunya": ["Mercimek çorbası", "Yayla çorbası", "Pirinç pilavı", "Erişte"], "Patates yemeği": ["Mercimek çorbası", "Yayla çorbası", "Pirinç pilavı", "Makarna"], "Kuru fasulye": ["Pirinç pilavı", "Şehriyeli pilav", "Yayla çorbası"], "Nohut": ["Pirinç pilavı", "Şehriyeli pilav", "Yayla çorbası"], "Yeşil mercimek yemeği": ["Pirinç pilavı", "Şehriyeli pilav", "Yayla çorbası", "Makarna"], "Barbunya pilaki": ["Pirinç pilavı", "Şehriyeli pilav", "Yayla çorbası"], "Tavuk sote": ["Pirinç pilavı", "Şehriyeli pilav", "Makarna", "Patates püresi", "Mercimek çorbası"], "Fırında tavuk ve sebze": ["Bulgur pilavı", "Pirinç pilavı", "Mercimek çorbası", "Ezogelin", "Tarhana"], "Tavuk şiş / ızgara": ["Bulgur pilavı", "Pirinç pilavı", "Fırın patates", "Ezogelin", "Mercimek çorbası"], "Fırında köfte ve patates": ["Pirinç pilavı", "Şehriyeli pilav", "Mercimek çorbası", "Yayla çorbası"], "İzmir köfte": ["Pirinç pilavı", "Şehriyeli pilav", "Mercimek çorbası", "Yayla çorbası"], "Et sote / tas kebabı": ["Pirinç pilavı", "Şehriyeli pilav", "Patates püresi", "Erişte", "Mercimek çorbası"], "Belen tava": ["Pirinç pilavı", "Şehriyeli pilav", "Mercimek çorbası", "Yayla çorbası"], "Hamsi tava": ["Mercimek çorbası", "Ezogelin", "Tarhana", "Fırın patates"], "Palamut": ["Mercimek çorbası", "Ezogelin", "Bulgur pilavı", "Fırın patates"], "Fırında uskumru": ["Mercimek çorbası", "Tarhana", "Bulgur pilavı", "Fırın patates"], "Fırında levrek / çipura": ["Mercimek çorbası", "Ezogelin", "Domates çorbası", "Fırın patates", "Bulgur pilavı"], "Fırında somon": ["Mercimek çorbası", "Ezogelin", "Pirinç pilavı", "Fırın patates", "Patates püresi"], "Pizza": [], "Hamburger": ["Fırın patates"], "Mantı": [], "Kebap": ["Bulgur pilavı", "Pirinç pilavı"], "Fırın makarna": ["Mercimek çorbası", "Ezogelin"]}, "sablon": {"1": [{"gun": "Pazartesi", "kategori": "Sebze yemeği", "not": ""}, {"gun": "Salı", "kategori": "Dünden devam", "not": ""}, {"gun": "Çarşamba", "kategori": "Bakliyat", "not": ""}, {"gun": "Perşembe", "kategori": "Dünden devam", "not": ""}, {"gun": "Cuma", "kategori": "Balık", "not": ""}, {"gun": "Cumartesi", "kategori": "Tavuk", "not": "Tavuk haftası"}, {"gun": "Pazar", "kategori": "Sebze yemeği", "not": "Tek gün"}], "2": [{"gun": "Pazartesi", "kategori": "Sebze yemeği", "not": ""}, {"gun": "Salı", "kategori": "Dünden devam", "not": ""}, {"gun": "Çarşamba", "kategori": "Salata bowl", "not": ""}, {"gun": "Perşembe", "kategori": "Et", "not": "Et haftası"}, {"gun": "Cuma", "kategori": "Balık", "not": ""}, {"gun": "Cumartesi", "kategori": "Dışarıda", "not": ""}, {"gun": "Pazar", "kategori": "Bakliyat", "not": "Tek gün"}], "3": [{"gun": "Pazartesi", "kategori": "Sebze yemeği", "not": ""}, {"gun": "Salı", "kategori": "Dünden devam", "not": ""}, {"gun": "Çarşamba", "kategori": "Bakliyat", "not": ""}, {"gun": "Perşembe", "kategori": "Dünden devam", "not": ""}, {"gun": "Cuma", "kategori": "Balık", "not": ""}, {"gun": "Cumartesi", "kategori": "Tavuk", "not": "Tavuk haftası"}, {"gun": "Pazar", "kategori": "Yeni tarif", "not": "Ayda bir"}], "4": [{"gun": "Pazartesi", "kategori": "Bakliyat", "not": ""}, {"gun": "Salı", "kategori": "Dünden devam", "not": ""}, {"gun": "Çarşamba", "kategori": "Salata bowl", "not": ""}, {"gun": "Perşembe", "kategori": "Et", "not": "Et haftası"}, {"gun": "Cuma", "kategori": "Balık", "not": ""}, {"gun": "Cumartesi", "kategori": "Sebze yemeği", "not": "Tek gün"}, {"gun": "Pazar", "kategori": "Dışarıda", "not": ""}]}, "agirliklar": {"Sık": 3, "Normal": 2, "Seyrek": 1, "Kapalı": 0}};</script>
+<script>
+/* Haftalık akşam yemeği plan motoru. Saf ES5, DOM yok. */
+(function (root, factory) {
+  if (typeof module === 'object' && module && module.exports) {
+    module.exports = factory();
+  } else {
+    root.YemekEngine = factory();
+  }
+})(this, function () {
+  'use strict';
+
+  var GUNLER = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
+  var AYLAR = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+  var ANCHOR = new Date(2026, 10, 16); // Hafta 1 Pazartesi
+  var DAY_MS = 86400000;
+  var DEVAM = 'Dünden devam';
+  var ESLIKSIZ = ['Salata bowl', 'Dışarıda', 'Yeni tarif'];
+  var PRATIK_GUNLERI = ['Sebze yemeği', 'Bakliyat', 'Tavuk', 'Et'];
+  var DEFAULT_W = { 'Sık': 3, 'Normal': 2, 'Seyrek': 1, 'Kapalı': 0 };
+
+  function pad2(n) { return n < 10 ? '0' + n : String(n); }
+
+  function mondayOf(date) {
+    var back = (date.getDay() + 6) % 7;
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate() - back);
+  }
+
+  function dateKey(date) {
+    return date.getFullYear() + '-' + pad2(date.getMonth() + 1) + '-' + pad2(date.getDate());
+  }
+
+  function parseKey(key) {
+    var p = String(key).split('-');
+    return new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+  }
+
+  function addDays(date, n) {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate() + n);
+  }
+
+  function cycleWeek(date) {
+    var diff = Math.round((mondayOf(date).getTime() - ANCHOR.getTime()) / (7 * DAY_MS));
+    return (((diff % 4) + 4) % 4) + 1;
+  }
+
+  function hashStr(s) {
+    var h = 2166136261;
+    for (var i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+
+  function mulberry32(a) {
+    return function () {
+      a = (a + 0x6D2B79F5) | 0;
+      var t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function inSeason(y, ay) {
+    var m = y.mevsim;
+    if (!m) { return true; }
+    if (m.bas <= m.son) { return ay >= m.bas && ay <= m.son; }
+    return ay >= m.bas || ay <= m.son;
+  }
+
+  var cacheData = null;
+  var cacheIdx = null;
+  function index(data) {
+    if (cacheData === data && cacheIdx) { return cacheIdx; }
+    var by = {};
+    var list = data.yemekler;
+    for (var i = 0; i < list.length; i++) { by[list[i].ad] = list[i]; }
+    cacheData = data;
+    cacheIdx = { by: by, w: data.agirliklar || DEFAULT_W };
+    return cacheIdx;
+  }
+
+  function weightOf(idx, y) {
+    var w = idx.w[y.siklik];
+    return typeof w === 'number' ? w : 0;
+  }
+
+  function pickWeighted(items, rng) {
+    var total = 0, i;
+    for (i = 0; i < items.length; i++) { total += items[i].w; }
+    if (total <= 0) { return items.length ? items[Math.floor(rng() * items.length)].y : null; }
+    var r = rng() * total;
+    for (i = 0; i < items.length; i++) {
+      r -= items[i].w;
+      if (r < 0) { return items[i].y; }
+    }
+    return items[items.length - 1].y;
+  }
+
+  // ---- Eşlik ----
+
+  function eslikAdaylari(data, anaAd, ay) {
+    var idx = index(data);
+    var ana = idx.by[anaAd];
+    var out = [];
+    if (!ana || ESLIKSIZ.indexOf(ana.kategori) >= 0) { return out; }
+    var list = data.kombinasyonlar[anaAd] || [];
+    for (var i = 0; i < list.length; i++) {
+      var e = idx.by[list[i]];
+      if (!e || weightOf(idx, e) <= 0 || !inSeason(e, ay)) { continue; }
+      if (ana.kategori === 'Tavuk' && e.kategori === 'Çorba' && e.tavuklu) { continue; }
+      out.push(e);
+    }
+    return out;
+  }
+
+  // opts: { prevEslik: ad|null, avoid: ad|null }
+  function eslikSec(data, anaAd, ay, rng, opts) {
+    opts = opts || {};
+    var idx = index(data);
+    var ana = idx.by[anaAd];
+    var cands = eslikAdaylari(data, anaAd, ay);
+    if (!cands.length) { return null; }
+    var prev = opts.prevEslik ? idx.by[opts.prevEslik] : null;
+    var avoid = opts.avoid || null;
+    var salcali = ana && ana.taban === 'Salçalı';
+    // gevşetme sırası: tür tercihi, Salçalı filtresi, önceki günden farklı olma
+    var combos = [[true, true, true], [true, true, false], [true, false, false], [false, false, false]];
+    for (var c = 0; c < combos.length; c++) {
+      var f = combos[c];
+      var pool = [];
+      for (var i = 0; i < cands.length; i++) {
+        var e = cands[i];
+        if (f[0] && prev && e.ad === prev.ad) { continue; }
+        if (f[1] && salcali && e.taban === 'Salçalı') { continue; }
+        if (f[2] && prev && e.kategori === prev.kategori) { continue; }
+        pool.push({ y: e, w: weightOf(idx, e) });
+      }
+      if (pool.length && avoid) {
+        var rest = [];
+        for (var j = 0; j < pool.length; j++) { if (pool[j].y.ad !== avoid) { rest.push(pool[j]); } }
+        if (rest.length) { pool = rest; }
+      }
+      if (pool.length) { return pickWeighted(pool, rng).ad; }
+    }
+    return null;
+  }
+
+  // ---- Gün seçimi ----
+
+  function effCategory(tmpl, i) {
+    var k = i;
+    while (k > 0 && tmpl[k].kategori === DEVAM) { k--; }
+    return tmpl[k].kategori;
+  }
+
+  function usedNames(days, skip) {
+    var m = {};
+    for (var i = 0; i < days.length; i++) {
+      if (i !== skip && days[i] && days[i].ana) { m[days[i].ana] = true; }
+    }
+    return m;
+  }
+
+  function pratikUsed(idx, days, skip) {
+    for (var i = 0; i < days.length; i++) {
+      if (i !== skip && days[i] && days[i].ana) {
+        var y = idx.by[days[i].ana];
+        if (y && y.kategori === 'Pratik') { return true; }
+      }
+    }
+    return false;
+  }
+
+  function last2Names(history, monday) {
+    var keys = [dateKey(addDays(monday, -7)), dateKey(addDays(monday, -14))];
+    var m = {};
+    var h = history || [];
+    for (var i = 0; i < h.length; i++) {
+      if (keys.indexOf(h[i].monday) >= 0) {
+        var ds = h[i].days || [];
+        for (var j = 0; j < ds.length; j++) { if (ds[j] && ds[j].ana) { m[ds[j].ana] = true; } }
+      }
+    }
+    return m;
+  }
+
+  // ctx: { monday, tmpl, days, last2, tavukHaftasi }
+  function pickAna(data, ctx, i, cat, rng, avoid, allowPratik) {
+    var idx = index(data);
+    var date = addDays(ctx.monday, i);
+    var ay = date.getMonth() + 1;
+    var hafta = (i >= 5) ? 2 : 1;
+    var cands = [];
+    var k, y, w;
+    var tavukBonus = ctx.tavukHaftasi && (cat === 'Sebze yemeği' || cat === 'Bakliyat');
+    for (k = 0; k < data.yemekler.length; k++) {
+      y = data.yemekler[k];
+      if (!inSeason(y, ay)) { continue; }
+      w = weightOf(idx, y);
+      if (w <= 0) { continue; }
+      if (y.kategori === cat) {
+        if (tavukBonus && y.tavuklu) { w = w * 2; }
+        cands.push({ y: y, w: w });
+      } else if (allowPratik && y.kategori === 'Pratik') {
+        cands.push({ y: y, w: w * hafta });
+      }
+    }
+    var chosen = usedNames(ctx.days, i);
+    for (var stage = 0; stage < 3; stage++) {
+      var pool = [];
+      for (k = 0; k < cands.length; k++) {
+        var n = cands[k].y.ad;
+        if (stage < 1 && ctx.last2[n]) { continue; }
+        if (stage < 2 && chosen[n]) { continue; }
+        pool.push(cands[k]);
+      }
+      if (pool.length && avoid) {
+        var rest = [];
+        for (k = 0; k < pool.length; k++) { if (pool[k].y.ad !== avoid) { rest.push(pool[k]); } }
+        if (rest.length) { pool = rest; }
+      }
+      if (pool.length) {
+        return { ana: pickWeighted(pool, rng).ad, relaxed: stage >= 1 };
+      }
+    }
+    return { ana: null, relaxed: true };
+  }
+
+  // Bir günü doldurur: { ana, eslik, relaxed }
+  function fillDay(data, ctx, i, rng, avoid) {
+    var idx = index(data);
+    var date = addDays(ctx.monday, i);
+    var ay = date.getMonth() + 1;
+    var tcat = ctx.tmpl[i].kategori;
+    var prev = i > 0 ? ctx.days[i - 1] : null;
+    var res;
+    if (tcat === DEVAM) {
+      var cat = effCategory(ctx.tmpl, i);
+      var py = prev && prev.ana ? idx.by[prev.ana] : null;
+      if (py && py.ikiGun && inSeason(py, ay) && py.ad !== avoid) {
+        res = { ana: py.ad, relaxed: !!prev.relaxed };
+      } else {
+        res = pickAna(data, ctx, i, cat, rng, prev && prev.ana ? prev.ana : avoid, false);
+      }
+    } else {
+      var nextDevam = (i < 6 && ctx.tmpl[i + 1].kategori === DEVAM);
+      var allow = PRATIK_GUNLERI.indexOf(tcat) >= 0 && !nextDevam && !pratikUsed(idx, ctx.days, i);
+      res = pickAna(data, ctx, i, tcat, rng, avoid, allow);
+    }
+    var eslik = null;
+    if (res.ana) {
+      eslik = eslikSec(data, res.ana, ay, rng, {
+        prevEslik: prev ? prev.eslik : null
+      });
+    }
+    return { ana: res.ana, eslik: eslik, relaxed: res.relaxed };
+  }
+
+  function emptyDay(monday, i, tmpl) {
+    var d = addDays(monday, i);
+    return { tarih: dateKey(d), gun: GUNLER[i], kategori: tmpl[i].kategori, ana: null, eslik: null, locked: false, relaxed: false };
+  }
+
+  function makeCtx(data, monday, history, days) {
+    var tmpl = data.sablon[String(cycleWeek(monday))];
+    var tavuk = false;
+    for (var i = 0; i < tmpl.length; i++) { if (tmpl[i].kategori === 'Tavuk') { tavuk = true; } }
+    return { monday: monday, tmpl: tmpl, days: days, last2: last2Names(history, monday), tavukHaftasi: tavuk };
+  }
+
+  function planWeek(data, monday, opts) {
+    opts = opts || {};
+    monday = mondayOf(monday);
+    var counter = opts.counter || 0;
+    var locked = opts.locked || {};
+    var tmpl = data.sablon[String(cycleWeek(monday))];
+    var days = [];
+    var i;
+    for (i = 0; i < 7; i++) {
+      var d = emptyDay(monday, i, tmpl);
+      var L = locked[String(i)];
+      if (L) {
+        d.ana = L.ana || null;
+        d.eslik = L.eslik || null;
+        d.locked = true;
+      }
+      days.push(d);
+    }
+    var ctx = makeCtx(data, monday, opts.history, days);
+    var rng = mulberry32(hashStr(dateKey(monday) + ':' + counter));
+    for (i = 0; i < 7; i++) {
+      if (days[i].locked) { continue; }
+      var r = fillDay(data, ctx, i, rng, null);
+      days[i].ana = r.ana;
+      days[i].eslik = r.eslik;
+      days[i].relaxed = r.relaxed;
+    }
+    return { monday: dateKey(monday), cycleWeek: cycleWeek(monday), counter: counter, rerollN: 0, days: days };
+  }
+
+  function rerollDay(data, plan, dayIndex, opts) {
+    opts = opts || {};
+    var monday = parseKey(plan.monday);
+    var n = (plan.rerollN || 0) + 1;
+    var days = [];
+    var i;
+    for (i = 0; i < 7; i++) {
+      var s = plan.days[i];
+      days.push({ tarih: s.tarih, gun: s.gun, kategori: s.kategori, ana: s.ana, eslik: s.eslik, locked: !!s.locked, relaxed: !!s.relaxed });
+    }
+    var ctx = makeCtx(data, monday, opts.history, days);
+    var rng = mulberry32(hashStr(plan.monday + ':' + plan.counter + ':r:' + dayIndex + ':' + n));
+    var old = days[dayIndex].ana;
+    var oldEslik = days[dayIndex].eslik;
+    var r;
+    var idx = index(data);
+    var oy = old ? idx.by[old] : null;
+    if (ctx.tmpl[dayIndex].kategori === DEVAM && oy && oy.ikiGun) {
+      // Dünden devam günü: ana aynı kalır, yalnızca eşlik yenilenir
+      var ay = parseKey(days[dayIndex].tarih).getMonth() + 1;
+      var prev = dayIndex > 0 ? days[dayIndex - 1] : null;
+      days[dayIndex].eslik = eslikSec(data, old, ay, rng, { prevEslik: prev ? prev.eslik : null, avoid: oldEslik });
+      days[dayIndex].locked = false;
+    } else {
+      days[dayIndex].ana = null;
+      days[dayIndex].locked = false;
+      r = fillDay(data, ctx, dayIndex, rng, old);
+      days[dayIndex].ana = r.ana;
+      days[dayIndex].eslik = r.eslik;
+      days[dayIndex].relaxed = r.relaxed;
+      // ardışık "Dünden devam" günleri yeni yemeği izler
+      for (i = dayIndex + 1; i < 7 && ctx.tmpl[i].kategori === DEVAM && !days[i].locked; i++) {
+        days[i].ana = null;
+        var r2 = fillDay(data, ctx, i, rng, null);
+        days[i].ana = r2.ana;
+        days[i].eslik = r2.eslik;
+        days[i].relaxed = r2.relaxed;
+      }
+    }
+    return { monday: plan.monday, cycleWeek: plan.cycleWeek, counter: plan.counter, rerollN: n, days: days };
+  }
+
+  return {
+    GUNLER: GUNLER,
+    AYLAR: AYLAR,
+    ANCHOR: ANCHOR,
+    mondayOf: mondayOf,
+    dateKey: dateKey,
+    parseKey: parseKey,
+    addDays: addDays,
+    cycleWeek: cycleWeek,
+    inSeason: inSeason,
+    hashStr: hashStr,
+    mulberry32: mulberry32,
+    eslikAdaylari: eslikAdaylari,
+    eslikSec: eslikSec,
+    planWeek: planWeek,
+    rerollDay: rerollDay
+  };
+});
+
+</script>
+<script>
+/* Haftalık akşam yemeği planı arayüzü. Saf ES5 (iOS 9 Safari). */
+(function () {
+  'use strict';
+  if (typeof document === 'undefined') { return; }
+
+  var KEY = 'yemekPlani.v1';
+  var DEVAM = 'Dünden devam';
+  var KISA_GUN = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+  var KISA_AY = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+  var ANA_KATS = ['Sebze yemeği', 'Bakliyat', 'Tavuk', 'Et', 'Balık', 'Pratik', 'Salata bowl', 'Dışarıda', 'Yeni tarif'];
+  var ESLIKSIZ = ['Salata bowl', 'Dışarıda', 'Yeni tarif'];
+  var DISARIDA = 'Dışarıda yemek';
+
+  var E = window.YemekEngine;
+  var D = window.YEMEK_DATA;
+
+  function esc(s) {
+    return String(s === null || s === undefined ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  var root = document.body;
+  if (!E || !D || !D.yemekler || !D.sablon) {
+    root.innerHTML = '<div style="padding:40px;font:24px sans-serif;color:#7a2e12">Plan yüklenemedi: ' +
+      (!E ? 'plan motoru' : 'yemek verisi') + ' bulunamadı. Sayfayı yenilemeyi dene.</div>';
+    return;
+  }
+
+  // ---- Test parametreleri ----
+  var nowOverride = null;
+  var hourOverride = null;
+  var testMode = false;
+  (function () {
+    var q = String(location.search || '');
+    var m = /[?&]tarih=(\d{4})-(\d{1,2})-(\d{1,2})/.exec(q);
+    if (m) {
+      nowOverride = new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10));
+      testMode = true;
+    }
+    var h = /[?&]saat=(\d{1,2})/.exec(q);
+    if (h) { hourOverride = parseInt(h[1], 10); testMode = true; }
+  })();
+
+  function now() { return nowOverride ? nowOverride : new Date(); }
+  function today() { var n = now(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
+  function hourNow() { return hourOverride !== null ? hourOverride : new Date().getHours(); }
+
+  // ---- Depo ----
+  var store = { v: 1, weeks: {} };
+  function loadStore() {
+    try {
+      var raw = window.localStorage.getItem(KEY);
+      if (raw) {
+        var o = JSON.parse(raw);
+        if (o && o.v === 1 && o.weeks && typeof o.weeks === 'object') { store = o; }
+      }
+    } catch (e) { /* bellekte çalış */ }
+  }
+  function saveStore() {
+    var keys = Object.keys(store.weeks).sort();
+    while (keys.length > 6) { delete store.weeks[keys.shift()]; }
+    try { window.localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) { /* yoksay */ }
+  }
+  function historyFor(mondayKey) {
+    var keys = Object.keys(store.weeks).sort();
+    var out = [];
+    for (var i = 0; i < keys.length; i++) {
+      if (keys[i] < mondayKey) { out.push(store.weeks[keys[i]]); }
+    }
+    return out;
+  }
+  function validPlan(p) {
+    return p && p.days && p.days.length === 7 && p.monday;
+  }
+  function getPlan(monday, create) {
+    var key = E.dateKey(monday);
+    var p = store.weeks[key];
+    if (validPlan(p)) { return p; }
+    if (!create) { return null; }
+    p = E.planWeek(D, monday, { counter: 0, history: historyFor(key) });
+    store.weeks[key] = p;
+    saveStore();
+    return p;
+  }
+
+  // ---- Veri yardımcıları ----
+  var byName = {};
+  (function () {
+    for (var i = 0; i < D.yemekler.length; i++) { byName[D.yemekler[i].ad] = D.yemekler[i]; }
+  })();
+
+  function effCat(plan, i) {
+    var k = i;
+    while (k > 0 && plan.days[k].kategori === DEVAM) { k--; }
+    return plan.days[k].kategori;
+  }
+  function dayMonth(day) { return E.parseKey(day.tarih).getMonth() + 1; }
+  function inList(arr, v) { for (var i = 0; i < arr.length; i++) { if (arr[i] === v) { return true; } } return false; }
+  function hasClass(el, c) { return (' ' + (el.className || '') + ' ').indexOf(' ' + c + ' ') >= 0; }
+
+  // ---- Durum ----
+  var state = { view: 0, panel: -1, onay: null };
+  var startKey = E.dateKey(today());
+
+  function viewMonday() { return E.addDays(E.mondayOf(today()), state.view * 7); }
+  function viewPlan() { return getPlan(viewMonday(), true); }
+
+  // ---- Çizim ----
+  function eslikText(day) {
+    if (!day.ana) { return { t: '', yok: false }; }
+    var y = byName[day.ana];
+    if (y && inList(ESLIKSIZ, y.kategori)) { return { t: '', yok: false }; }
+    if (day.eslik) { return { t: day.eslik, yok: false }; }
+    return { t: 'tek başına', yok: true };
+  }
+
+  function heroHtml() {
+    var t = today();
+    var mp = getPlan(E.mondayOf(t), true);
+    var idx = (t.getDay() + 6) % 7;
+    var day = mp.days[idx];
+    var ad = day.ana;
+    var cls = 'bugun-yemek';
+    var txt = ad;
+    if (!ad) { txt = 'Henüz seçilmedi'; cls += ' bos'; }
+    else if (ad.length > 24) { cls += ' cok-uzun'; }
+    else if (ad.length > 16) { cls += ' uzun'; }
+    var eslik = '';
+    if (ad) {
+      if (ad === DISARIDA) { eslik = 'Afiyet olsun'; }
+      else if (day.eslik) { eslik = 'yanında <b>' + esc(day.eslik) + '</b>'; }
+    }
+    // yarın
+    var yarin = '';
+    var yp, yday;
+    if (idx < 6) { yday = mp.days[idx + 1]; }
+    else {
+      yp = getPlan(E.addDays(E.mondayOf(t), 7), false);
+      yday = yp ? yp.days[0] : null;
+    }
+    if (yday && yday.ana) {
+      yarin = 'Yarın: <b>' + esc(yday.ana) + '</b>';
+      if (yday.eslik) { yarin += ' + ' + esc(yday.eslik); }
+    }
+    return '<div class="bugun">' +
+      '<div class="bugun-tarih">' + t.getDate() + ' ' + E.AYLAR[t.getMonth()] + ' ' + E.GUNLER[idx] +
+      '<span class="bugun-etiket">Bu akşam</span></div>' +
+      '<div class="' + cls + '">' + esc(txt) + '</div>' +
+      '<div class="bugun-eslik"' + (eslik ? '' : ' style="display:none"') + '>' + eslik + '</div>' +
+      '<div class="bugun-yarin"' + (yarin ? '' : ' style="display:none"') + '>' + yarin + '</div>' +
+      '</div>';
+  }
+
+  function rangeText(monday) {
+    var sun = E.addDays(monday, 6);
+    if (monday.getMonth() === sun.getMonth()) {
+      return monday.getDate() + '–' + sun.getDate() + ' ' + E.AYLAR[sun.getMonth()];
+    }
+    return monday.getDate() + ' ' + E.AYLAR[monday.getMonth()] + ' – ' + sun.getDate() + ' ' + E.AYLAR[sun.getMonth()];
+  }
+
+  function headerHtml(monday) {
+    return '<header class="ust">' + heroHtml() +
+      '<div class="eylemler">' +
+      '<div class="sekme">' +
+      '<button class="sekme-btn' + (state.view === 0 ? ' aktif' : '') + '" data-eylem="bu-hafta">Bu hafta</button>' +
+      '<button class="sekme-btn' + (state.view === 1 ? ' aktif' : '') + '" data-eylem="gelecek-hafta">Gelecek hafta</button>' +
+      '</div>' +
+      '<button class="btn btn-ana" data-eylem="planla">Haftanın planını yap</button>' +
+      '<button class="btn btn-ikincil" data-eylem="sifirla">Tümünü sıfırla</button>' +
+      '<div class="dongu">' + rangeText(monday) + '<br>Döngü haftası ' + E.cycleWeek(monday) + ' / 4</div>' +
+      '</div></header>';
+  }
+
+  function weekHtml(plan, monday) {
+    var tk = E.dateKey(today());
+    var h = '<ul class="hafta">';
+    for (var i = 0; i < 7; i++) {
+      var day = plan.days[i];
+      var date = E.addDays(monday, i);
+      var dk = E.dateKey(date);
+      var cls = 'gun';
+      if (dk < tk) { cls += ' gecmis'; }
+      if (dk === tk) { cls += ' bugun'; }
+      if (day.kategori === DEVAM) { cls += ' devam'; }
+      if (day.locked) { cls += ' elle'; }
+      if (!day.ana) { cls += ' bos'; }
+      var et = eslikText(day);
+      h += '<li class="' + cls + '" data-gun="' + i + '">' +
+        '<div class="gun-ust"><span class="gun-ad">' + KISA_GUN[i] + '</span><span class="gun-tarih">' +
+        date.getDate() + ' ' + KISA_AY[date.getMonth()] + '</span></div>' +
+        '<div class="gun-yemek">' + (day.ana ? esc(day.ana) : 'Boş') + '</div>' +
+        '<div class="gun-eslik' + (et.yok ? ' yok' : '') + '">' + esc(et.t) + '</div>' +
+        '<div class="gun-alt"><span class="gun-kategori">' + esc(day.kategori === DEVAM ? DEVAM : day.kategori) +
+        '</span><span class="gun-elle">elle</span></div></li>';
+    }
+    return h + '</ul>';
+  }
+
+  function opt(val, label, sel) {
+    return '<option value="' + esc(val) + '"' + (sel ? ' selected="selected"' : '') + '>' + esc(label) + '</option>';
+  }
+
+  function anaSelectHtml(plan, i) {
+    var day = plan.days[i];
+    var ay = dayMonth(day);
+    var first = effCat(plan, i);
+    var order = [first], k;
+    for (k = 0; k < ANA_KATS.length; k++) { if (ANA_KATS[k] !== first) { order.push(ANA_KATS[k]); } }
+    var h = '<select id="sec-ana">' + opt('', '— Boş —', !day.ana);
+    var seen = {};
+    for (k = 0; k < order.length; k++) {
+      var cat = order[k];
+      var inS = '', outS = '';
+      for (var j = 0; j < D.yemekler.length; j++) {
+        var y = D.yemekler[j];
+        if (y.kategori !== cat) { continue; }
+        if (y.siklik === 'Kapalı' && y.ad !== day.ana) { continue; }
+        seen[y.ad] = true;
+        if (E.inSeason(y, ay)) { inS += opt(y.ad, y.ad, y.ad === day.ana); }
+        else { outS += opt(y.ad, y.ad + ' (mevsim dışı)', y.ad === day.ana); }
+      }
+      if (inS || outS) { h += '<optgroup label="' + esc(cat) + '">' + inS + outS + '</optgroup>'; }
+    }
+    if (day.ana && !seen[day.ana]) { h += opt(day.ana, day.ana, true); }
+    return h + '</select>';
+  }
+
+  function eslikSelectHtml(plan, i) {
+    var day = plan.days[i];
+    var ay = dayMonth(day);
+    var cur = day.eslik;
+    var h = '<select id="sec-eslik">' + opt('', 'Eşlik yok', !cur);
+    var seen = {};
+    var g1 = '', j, y;
+    if (day.ana) {
+      var c = E.eslikAdaylari(D, day.ana, ay);
+      for (j = 0; j < c.length; j++) { seen[c[j].ad] = true; g1 += opt(c[j].ad, c[j].ad, c[j].ad === cur); }
+    }
+    if (g1) { h += '<optgroup label="Bu yemeğe uyanlar">' + g1 + '</optgroup>'; }
+    var cats = [['Çorba', 'Çorbalar'], ['Karbonhidrat', 'Karbonhidratlar']];
+    for (var k = 0; k < cats.length; k++) {
+      var g = '';
+      for (j = 0; j < D.yemekler.length; j++) {
+        y = D.yemekler[j];
+        if (y.kategori !== cats[k][0] || seen[y.ad]) { continue; }
+        if (y.siklik === 'Kapalı' && y.ad !== cur) { continue; }
+        seen[y.ad] = true;
+        g += opt(y.ad, y.ad, y.ad === cur);
+      }
+      if (g) { h += '<optgroup label="' + cats[k][1] + '">' + g + '</optgroup>'; }
+    }
+    if (cur && !seen[cur]) { h += opt(cur, cur, true); }
+    return h + '</select>';
+  }
+
+  function panelHtml(plan, monday) {
+    var i = state.panel;
+    if (i < 0) { return '<div class="perde" data-eylem="kapat"></div><div class="panel"></div>'; }
+    var day = plan.days[i];
+    var date = E.addDays(monday, i);
+    return '<div class="perde acik" data-eylem="kapat"></div>' +
+      '<div class="panel acik">' +
+      '<div class="panel-baslik">' + E.GUNLER[i] + ', ' + date.getDate() + ' ' + E.AYLAR[date.getMonth()] + '</div>' +
+      '<div class="panel-alt">Şablon: ' + esc(effCat(plan, i)) + (day.locked ? ' · elle değiştirildi' : '') + '</div>' +
+      '<label class="alan-ad">Ana yemek</label>' +
+      '<div class="secim">' + anaSelectHtml(plan, i) + '</div>' +
+      '<button class="btn btn-ikincil btn-tam" data-eylem="yeniden">↻ Bu günü yeniden seç</button>' +
+      '<label class="alan-ad">Eşlik</label>' +
+      '<div class="secim">' + eslikSelectHtml(plan, i) + '</div>' +
+      '<label class="alan-ad">Kısayollar</label>' +
+      '<div class="satir"><button class="btn btn-ikincil" data-eylem="bosalt">Günü boşalt</button>' +
+      '<button class="btn btn-ikincil" data-eylem="disarida">Dışarıda yiyeceğiz</button></div>' +
+      (day.locked ? '<button class="btn btn-metin" data-eylem="otomatik">Otomatiğe döndür</button>' : '') +
+      '<div class="panel-kapat"><button class="btn btn-ana btn-tam" data-eylem="kapat">Tamam</button></div>' +
+      '</div>';
+  }
+
+  function onayHtml(plan) {
+    var o = state.onay;
+    if (!o) {
+      return '<div class="onay"><div class="onay-kutu"><div class="onay-baslik"></div><div class="onay-metin"></div>' +
+        '<div class="satir"><button class="btn btn-ikincil" data-eylem="onay-hayir">Vazgeç</button>' +
+        '<button class="btn btn-ana" data-eylem="onay-evet">Tamam</button></div></div></div>';
+    }
+    var b, m, e;
+    if (o === 'planla') {
+      b = 'Haftayı yeniden dağıt?';
+      m = 'Elle değiştirdiğin ' + countLocked(plan) + ' gün korunacak, diğer günler yeniden seçilecek.';
+      e = 'Evet, dağıt';
+    } else {
+      b = 'Tüm değişiklikler silinsin mi?';
+      m = 'Bu haftadaki elle yapılan değişiklikler silinir ve hafta baştan planlanır.';
+      e = 'Evet, sıfırla';
+    }
+    return '<div class="onay acik"><div class="onay-kutu"><div class="onay-baslik">' + esc(b) + '</div>' +
+      '<div class="onay-metin">' + esc(m) + '</div>' +
+      '<div class="satir"><button class="btn btn-ikincil" data-eylem="onay-hayir">Vazgeç</button>' +
+      '<button class="btn btn-ana" data-eylem="onay-evet">' + esc(e) + '</button></div></div></div>';
+  }
+
+  function countLocked(plan) {
+    var n = 0;
+    for (var i = 0; i < 7; i++) { if (plan.days[i].locked) { n++; } }
+    return n;
+  }
+
+  var app = document.createElement('div');
+  app.className = 'app';
+  root.appendChild(app);
+
+  function render() {
+    var monday = viewMonday();
+    var plan = getPlan(monday, true);
+    app.innerHTML = headerHtml(monday) + weekHtml(plan, monday) + panelHtml(plan, monday) + onayHtml(plan);
+    applyTheme();
+  }
+
+  function applyTheme() {
+    var h = hourNow();
+    var gece = (h >= 21 || h < 7);
+    var c = ' ' + (root.className || '') + ' ';
+    var has = c.indexOf(' gece ') >= 0;
+    if (gece && !has) { root.className = (root.className ? root.className + ' ' : '') + 'gece'; }
+    if (!gece && has) { root.className = c.replace(' gece ', ' ').replace(/^\s+|\s+$/g, ''); }
+  }
+
+  // ---- Değişiklikler ----
+  function commit() { saveStore(); render(); }
+
+  function copyLocks(plan) {
+    var L = {};
+    for (var i = 0; i < 7; i++) {
+      if (plan.days[i].locked) { L[String(i)] = { ana: plan.days[i].ana, eslik: plan.days[i].eslik }; }
+    }
+    return L;
+  }
+
+  function regenerate(keepLocks) {
+    var monday = viewMonday();
+    var key = E.dateKey(monday);
+    var old = getPlan(monday, true);
+    var locks = keepLocks ? copyLocks(old) : {};
+    // Geçmiş günler (yenmiş yemekler) yeniden dağıtımda hiç değişmez.
+    var tk = E.dateKey(today());
+    var past = {};
+    for (var i = 0; i < 7; i++) {
+      if (old.days[i].tarih < tk && !locks[String(i)]) {
+        locks[String(i)] = { ana: old.days[i].ana, eslik: old.days[i].eslik };
+        past[i] = true;
+      }
+    }
+    var np = E.planWeek(D, monday, {
+      counter: (old.counter || 0) + 1,
+      locked: locks,
+      history: historyFor(key)
+    });
+    for (var j = 0; j < 7; j++) {
+      if (past[j]) { np.days[j].locked = keepLocks ? !!old.days[j].locked : false; }
+    }
+    store.weeks[key] = np;
+    state.panel = -1;
+    commit();
+  }
+
+  function setDay(i, fn) {
+    var plan = viewPlan();
+    fn(plan, plan.days[i], i);
+    commit();
+  }
+
+  function pickEslik(plan, i, ana) {
+    var day = plan.days[i];
+    var ay = dayMonth(day);
+    var prev = i > 0 ? plan.days[i - 1].eslik : null;
+    var cands = E.eslikAdaylari(D, ana, ay);
+    var names = [];
+    for (var k = 0; k < cands.length; k++) { names.push(cands[k].ad); }
+    if (!names.length) { return null; }
+    if (day.eslik && inList(names, day.eslik)) { return day.eslik; }
+    var rng = E.mulberry32(E.hashStr(plan.monday + ':e:' + i + ':' + (new Date().getTime())));
+    return E.eslikSec(D, ana, ay, rng, { prevEslik: prev });
+  }
+
+  function reroll(plan, i, lock) {
+    var key = plan.monday;
+    var np = E.rerollDay(D, plan, i, { history: historyFor(key) });
+    np.days[i].locked = lock;
+    store.weeks[key] = np;
+  }
+
+  function onEylem(a) {
+    var plan, i;
+    if (a === 'bu-hafta' || a === 'gelecek-hafta') {
+      state.view = (a === 'bu-hafta') ? 0 : 1;
+      state.panel = -1;
+      state.onay = null;
+      render();
+    } else if (a === 'planla') {
+      plan = viewPlan();
+      if (countLocked(plan) > 0) { state.onay = 'planla'; render(); }
+      else { regenerate(true); }
+    } else if (a === 'sifirla') {
+      state.onay = 'sifirla';
+      render();
+    } else if (a === 'onay-hayir') {
+      state.onay = null;
+      render();
+    } else if (a === 'onay-evet') {
+      var o = state.onay;
+      state.onay = null;
+      regenerate(o === 'planla');
+    } else if (a === 'kapat') {
+      state.panel = -1;
+      render();
+    } else if (state.panel >= 0) {
+      i = state.panel;
+      if (a === 'yeniden') {
+        reroll(viewPlan(), i, true);
+        commit();
+      } else if (a === 'bosalt') {
+        setDay(i, function (p, d) { d.ana = null; d.eslik = null; d.locked = true; });
+      } else if (a === 'disarida') {
+        setDay(i, function (p, d) { d.ana = DISARIDA; d.eslik = null; d.locked = true; });
+      } else if (a === 'otomatik') {
+        plan = viewPlan();
+        plan.days[i].locked = false;
+        reroll(plan, i, false);
+        commit();
+      }
+    }
+  }
+
+  function onClick(e) {
+    var el = e.target || e.srcElement;
+    while (el && el !== app) {
+      if (el.getAttribute) {
+        var a = el.getAttribute('data-eylem');
+        if (a) { onEylem(a); return; }
+        var g = el.getAttribute('data-gun');
+        if (g !== null && g !== '' && hasClass(el, 'gun')) {
+          state.panel = parseInt(g, 10);
+          render();
+          return;
+        }
+      }
+      el = el.parentNode;
+    }
+  }
+
+  function onChange(e) {
+    var el = e.target || e.srcElement;
+    var i = state.panel;
+    if (!el || i < 0) { return; }
+    var v = el.value;
+    if (el.id === 'sec-ana') {
+      setDay(i, function (p, d) {
+        d.ana = v || null;
+        d.eslik = v ? pickEslik(p, i, v) : null;
+        d.locked = true;
+      });
+    } else if (el.id === 'sec-eslik') {
+      setDay(i, function (p, d) { d.eslik = v || null; d.locked = true; });
+    }
+  }
+
+  app.addEventListener('click', onClick, false);
+  app.addEventListener('change', onChange, false);
+
+  // ---- Zamanlayıcılar ----
+  function tick() {
+    applyTheme();
+    if (!testMode && E.dateKey(new Date()) !== startKey) {
+      location.reload();
+    }
+  }
+  loadStore();
+  render();
+  setInterval(tick, 60000);
+  if (!testMode) {
+    var n = new Date();
+    var ms = new Date(n.getFullYear(), n.getMonth(), n.getDate() + 1).getTime() - n.getTime() + 1000;
+    setTimeout(function () { location.reload(); }, ms);
+  }
+
+  window.YemekApp = {
+    setNow: function (date) {
+      nowOverride = date;
+      state.view = 0;
+      state.panel = -1;
+      state.onay = null;
+      render();
+    },
+    render: render
+  };
+})();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,473 @@
+/* Yemek Planı — iPad mini 1 / iOS 9 Safari.
+   Kurallar: Flexbox + -webkit- önekleri. Grid, gap, CSS değişkeni, vh, object-fit, sticky YOK. */
+
+* { -webkit-box-sizing: border-box; box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: #f1f4eb;
+  color: #22302a;
+  font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-user-select: none;
+  user-select: none;
+  overflow-x: hidden;
+}
+button, select { font-family: inherit; }
+button {
+  -webkit-appearance: none;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* ---------- Sayfa iskeleti ---------- */
+.app {
+  height: 100%;
+  min-height: 600px;
+  padding: 26px 30px 22px;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-transition: background-color .6s, color .6s;
+  transition: background-color .6s, color .6s;
+}
+
+/* ---------- Üst: bu akşam ---------- */
+.ust {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: flex-start;
+  align-items: flex-start;
+  -webkit-flex: 1 1 auto;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.bugun {
+  -webkit-flex: 1 1 auto;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-right: 28px;
+  -webkit-align-self: stretch;
+  align-self: stretch;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-justify-content: center;
+  justify-content: center;
+  padding-bottom: 10px;
+}
+.bugun-tarih {
+  font-size: 22px;
+  font-weight: 600;
+  color: #4f6f4c;
+  letter-spacing: .3px;
+}
+.bugun-etiket {
+  display: inline-block;
+  margin-left: 12px;
+  padding: 3px 11px 4px;
+  border-radius: 13px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #fff;
+  background: #5e7f59;
+  vertical-align: 3px;
+}
+.bugun-yemek {
+  margin-top: 16px;
+  font-size: 104px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -3px;
+  color: #22302a;
+}
+.bugun-yemek.uzun { font-size: 80px; letter-spacing: -2px; }
+.bugun-yemek.cok-uzun { font-size: 64px; letter-spacing: -1.5px; }
+.bugun-yemek.bos { color: #b8ab99; font-weight: 600; }
+.bugun-eslik {
+  margin-top: 18px;
+  font-size: 40px;
+  font-weight: 300;
+  color: #5f6e60;
+}
+.bugun-eslik b { font-weight: 600; color: #a5636b; }
+.bugun-yarin {
+  margin-top: 28px;
+  font-size: 19px;
+  color: #879386;
+}
+.bugun-yarin b { font-weight: 600; color: #4a5a4c; }
+
+/* Sağ: eylemler */
+.eylemler {
+  width: 236px;
+  -webkit-flex: 0 0 236px;
+  flex: 0 0 236px;
+}
+.sekme {
+  display: -webkit-flex;
+  display: flex;
+  padding: 4px;
+  border-radius: 14px;
+  background: #e2e9d9;
+  margin-bottom: 12px;
+}
+.sekme-btn {
+  -webkit-flex: 1 1 0;
+  flex: 1 1 0;
+  min-height: 44px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #6d7b6c;
+}
+.sekme-btn.aktif {
+  background: #fbfcf7;
+  color: #22302a;
+  -webkit-box-shadow: 0 1px 3px rgba(40, 70, 40, .16);
+  box-shadow: 0 1px 3px rgba(40, 70, 40, .16);
+}
+.btn {
+  display: block;
+  min-height: 52px;
+  padding: 0 18px;
+  border-radius: 14px;
+  font-size: 17px;
+  font-weight: 600;
+  text-align: center;
+}
+.btn-ana {
+  background: #5e7f59;
+  color: #fff;
+  -webkit-box-shadow: 0 3px 0 #46613f;
+  box-shadow: 0 3px 0 #46613f;
+}
+.btn-ana:active { -webkit-transform: translateY(2px); transform: translateY(2px); -webkit-box-shadow: 0 1px 0 #46613f; box-shadow: 0 1px 0 #46613f; }
+.btn-ikincil {
+  background: transparent;
+  color: #5f6e60;
+  border: 2px solid #d1dbc6;
+}
+.btn-ikincil:active { background: #e8eee0; }
+.btn-metin {
+  background: transparent;
+  color: #4f6f4c;
+  min-height: 44px;
+  font-size: 16px;
+  text-decoration: underline;
+}
+.eylemler .btn { width: 100%; margin-bottom: 10px; }
+.dongu {
+  margin-top: 4px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #8f9b8e;
+  text-align: center;
+}
+
+/* ---------- Alt: hafta ---------- */
+.hafta {
+  list-style: none;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex: 0 0 auto;
+  flex: 0 0 auto;
+  margin-top: 18px;
+}
+.gun {
+  position: relative;
+  -webkit-flex: 1 1 0;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 226px;
+  margin-left: 10px;
+  padding: 14px 12px 12px;
+  border-radius: 16px;
+  background: #fbfcf7;
+  border: 2px solid #dfe7d5;
+  cursor: pointer;
+  overflow: hidden;
+  -webkit-transition: opacity .3s;
+  transition: opacity .3s;
+}
+.gun:first-child { margin-left: 0; }
+.gun:active { background: #eef3e7; }
+.gun-ust {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  -webkit-align-items: baseline;
+  align-items: baseline;
+}
+.gun-ad {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #4f6f4c;
+}
+.gun-tarih { font-size: 13px; color: #98a397; }
+.gun-yemek {
+  margin-top: 14px;
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 700;
+  color: #22302a;
+  word-wrap: break-word;
+}
+.gun-eslik {
+  margin-top: 8px;
+  font-size: 15px;
+  line-height: 1.3;
+  color: #66746a;
+}
+.gun-eslik:before { content: "+ "; color: #b97c84; font-weight: 700; }
+.gun-eslik.yok:before, .gun-eslik:empty:before { content: ""; }
+.gun-eslik.yok { color: #a9b3a6; font-style: italic; }
+.gun-alt {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 11px;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  -webkit-align-items: center;
+  align-items: center;
+}
+.gun-kategori { font-size: 12px; color: #98a397; }
+.gun-elle {
+  display: none;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: #5e7f59;
+}
+.gun.elle .gun-elle { display: inline; }
+.gun.devam .gun-yemek { color: #7f8b7f; }
+.gun.devam .gun-kategori { color: #8faa88; }
+.gun.bos .gun-yemek { color: #b5beb1; font-weight: 600; }
+.gun.gecmis { opacity: .42; }
+.gun.bugun {
+  background: #edf4e6;
+  border-color: #5e7f59;
+  -webkit-box-shadow: 0 4px 0 #5e7f59;
+  box-shadow: 0 4px 0 #5e7f59;
+}
+.gun.bugun .gun-ad { color: #5e7f59; }
+
+/* ---------- Düzenleme paneli ---------- */
+.perde {
+  display: none;
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  background: rgba(20, 35, 22, .42);
+  z-index: 10;
+}
+.perde.acik { display: block; }
+.panel {
+  display: none;
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: 452px;
+  padding: 26px 28px 24px;
+  background: #fbfcf7;
+  z-index: 11;
+  -webkit-box-shadow: -10px 0 34px rgba(20, 40, 20, .2);
+  box-shadow: -10px 0 34px rgba(20, 40, 20, .2);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.panel.acik { display: block; }
+.panel-baslik { font-size: 28px; font-weight: 700; letter-spacing: -.5px; }
+.panel-alt { margin-top: 4px; font-size: 15px; color: #8f9b8e; }
+.alan-ad {
+  display: block;
+  margin: 22px 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  color: #4f6f4c;
+}
+.secim { position: relative; }
+.secim:after {
+  content: "";
+  position: absolute;
+  right: 18px;
+  top: 22px;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 8px solid #4f6f4c;
+  pointer-events: none;
+}
+.secim select {
+  -webkit-appearance: none;
+  display: block;
+  width: 100%;
+  height: 54px;
+  padding: 0 44px 0 16px;
+  border: 2px solid #d1dbc6;
+  border-radius: 12px;
+  background: #fff;
+  color: #22302a;
+  font-size: 19px;
+  font-weight: 600;
+}
+.panel .btn-tam { width: 100%; margin-top: 10px; }
+.satir {
+  display: -webkit-flex;
+  display: flex;
+}
+.satir .btn { -webkit-flex: 1 1 0; flex: 1 1 0; font-size: 16px; padding: 0 8px; }
+.satir .btn + .btn { margin-left: 10px; }
+.panel .btn-metin { width: 100%; margin-top: 6px; }
+.panel-kapat { margin-top: 18px; }
+
+/* ---------- Sayfa içi onay ---------- */
+.onay {
+  display: none;
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  z-index: 20;
+  background: rgba(20, 35, 22, .5);
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+}
+.onay.acik { display: -webkit-flex; display: flex; }
+.onay-kutu {
+  width: 460px;
+  padding: 28px;
+  border-radius: 20px;
+  background: #fbfcf7;
+  -webkit-box-shadow: 0 16px 50px rgba(20, 40, 20, .3);
+  box-shadow: 0 16px 50px rgba(20, 40, 20, .3);
+}
+.onay-baslik { font-size: 24px; font-weight: 700; }
+.onay-metin { margin: 10px 0 22px; font-size: 17px; line-height: 1.45; color: #5f6e60; }
+
+
+/* ---------- Doğa süsleri (çok hafif, inline SVG) ---------- */
+body {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='240' viewBox='0 0 320 240'%3E%3Cg fill='none' stroke='%237d9b74' stroke-width='2' stroke-linecap='round' opacity='0.24'%3E%3Cpath d='M318 236 C250 200 200 152 150 122 S60 60 20 18'/%3E%3Cpath d='M200 150 C192 124 200 98 214 80'/%3E%3Cpath d='M120 100 C112 88 112 76 118 66'/%3E%3C/g%3E%3Cg fill='%238fae86' opacity='0.22'%3E%3Cellipse cx='270' cy='196' rx='22' ry='8' transform='rotate(-35 270 196)'/%3E%3Cellipse cx='246' cy='203' rx='20' ry='7' transform='rotate(25 246 203)'/%3E%3Cellipse cx='178' cy='121' rx='22' ry='8' transform='rotate(-40 178 121)'/%3E%3Cellipse cx='141' cy='134' rx='20' ry='7' transform='rotate(20 141 134)'/%3E%3Cellipse cx='102' cy='71' rx='20' ry='7' transform='rotate(-45 102 71)'/%3E%3Cellipse cx='76' cy='84' rx='18' ry='6' transform='rotate(15 76 84)'/%3E%3Cellipse cx='46' cy='37' rx='16' ry='6' transform='rotate(-50 46 37)'/%3E%3Cellipse cx='222' cy='108' rx='14' ry='5' transform='rotate(-70 222 108)'/%3E%3Cellipse cx='205' cy='120' rx='12' ry='4' transform='rotate(30 205 120)'/%3E%3C/g%3E%3Cg transform='translate(214 76) scale(1)'%3E%3Cg fill='%23d6a4ab' opacity='0.34'%3E%3Ccircle cx='0' cy='-7' r='6'/%3E%3Ccircle cx='6.7' cy='-2.2' r='6'/%3E%3Ccircle cx='4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-6.7' cy='-2.2' r='6'/%3E%3C/g%3E%3Ccircle r='3' fill='%23dcc27e' opacity='0.5'/%3E%3C/g%3E%3Cg transform='translate(18 17) scale(0.8)'%3E%3Cg fill='%23d6a4ab' opacity='0.34'%3E%3Ccircle cx='0' cy='-7' r='6'/%3E%3Ccircle cx='6.7' cy='-2.2' r='6'/%3E%3Ccircle cx='4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-6.7' cy='-2.2' r='6'/%3E%3C/g%3E%3Ccircle r='3' fill='%23dcc27e' opacity='0.5'/%3E%3C/g%3E%3Cg transform='translate(118 62) scale(0.6)'%3E%3Cg fill='%23d6a4ab' opacity='0.34'%3E%3Ccircle cx='0' cy='-7' r='6'/%3E%3Ccircle cx='6.7' cy='-2.2' r='6'/%3E%3Ccircle cx='4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-6.7' cy='-2.2' r='6'/%3E%3C/g%3E%3Ccircle r='3' fill='%23dcc27e' opacity='0.5'/%3E%3C/g%3E%3C/svg%3E"), url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='110' viewBox='0 0 240 110'%3E%3Cg fill='%238fae86' opacity='0.2'%3E%3Cellipse cx='40' cy='30' rx='14' ry='5' transform='rotate(-30 40 30)'/%3E%3Cellipse cx='58' cy='44' rx='12' ry='4' transform='rotate(40 58 44)'/%3E%3Cellipse cx='150' cy='22' rx='12' ry='4' transform='rotate(-60 150 22)'/%3E%3Cellipse cx='198' cy='70' rx='14' ry='5' transform='rotate(20 198 70)'/%3E%3Cellipse cx='110' cy='74' rx='10' ry='4' transform='rotate(-20 110 74)'/%3E%3C/g%3E%3Cg transform='translate(30 22) scale(0.7)'%3E%3Cg fill='%23d6a4ab' opacity='0.3'%3E%3Ccircle cx='0' cy='-7' r='6'/%3E%3Ccircle cx='6.7' cy='-2.2' r='6'/%3E%3Ccircle cx='4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-6.7' cy='-2.2' r='6'/%3E%3C/g%3E%3Ccircle r='3' fill='%23dcc27e' opacity='0.45'/%3E%3C/g%3E%3Cg transform='translate(168 36) scale(0.9)'%3E%3Cg fill='%23d6a4ab' opacity='0.3'%3E%3Ccircle cx='0' cy='-7' r='6'/%3E%3Ccircle cx='6.7' cy='-2.2' r='6'/%3E%3Ccircle cx='4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-6.7' cy='-2.2' r='6'/%3E%3C/g%3E%3Ccircle r='3' fill='%23dcc27e' opacity='0.45'/%3E%3C/g%3E%3Cg transform='translate(222 80) scale(0.6)'%3E%3Cg fill='%23d6a4ab' opacity='0.3'%3E%3Ccircle cx='0' cy='-7' r='6'/%3E%3Ccircle cx='6.7' cy='-2.2' r='6'/%3E%3Ccircle cx='4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-6.7' cy='-2.2' r='6'/%3E%3C/g%3E%3Ccircle r='3' fill='%23dcc27e' opacity='0.45'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: no-repeat, no-repeat;
+  background-position: right 18px top 300px, left 14px top 10px;
+  background-size: 360px 270px, 220px 101px;
+}
+body.gece {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='240' viewBox='0 0 320 240'%3E%3Cg fill='none' stroke='%2334482f' stroke-width='2' stroke-linecap='round' opacity='0.5'%3E%3Cpath d='M318 236 C250 200 200 152 150 122 S60 60 20 18'/%3E%3Cpath d='M200 150 C192 124 200 98 214 80'/%3E%3Cpath d='M120 100 C112 88 112 76 118 66'/%3E%3C/g%3E%3Cg fill='%233b5238' opacity='0.5'%3E%3Cellipse cx='270' cy='196' rx='22' ry='8' transform='rotate(-35 270 196)'/%3E%3Cellipse cx='246' cy='203' rx='20' ry='7' transform='rotate(25 246 203)'/%3E%3Cellipse cx='178' cy='121' rx='22' ry='8' transform='rotate(-40 178 121)'/%3E%3Cellipse cx='141' cy='134' rx='20' ry='7' transform='rotate(20 141 134)'/%3E%3Cellipse cx='102' cy='71' rx='20' ry='7' transform='rotate(-45 102 71)'/%3E%3Cellipse cx='76' cy='84' rx='18' ry='6' transform='rotate(15 76 84)'/%3E%3Cellipse cx='46' cy='37' rx='16' ry='6' transform='rotate(-50 46 37)'/%3E%3Cellipse cx='222' cy='108' rx='14' ry='5' transform='rotate(-70 222 108)'/%3E%3Cellipse cx='205' cy='120' rx='12' ry='4' transform='rotate(30 205 120)'/%3E%3C/g%3E%3Cg transform='translate(214 76) scale(1)'%3E%3Cg fill='%235a4246' opacity='0.55'%3E%3Ccircle cx='0' cy='-7' r='6'/%3E%3Ccircle cx='6.7' cy='-2.2' r='6'/%3E%3Ccircle cx='4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-6.7' cy='-2.2' r='6'/%3E%3C/g%3E%3Ccircle r='3' fill='%235c5236' opacity='0.6'/%3E%3C/g%3E%3Cg transform='translate(18 17) scale(0.8)'%3E%3Cg fill='%235a4246' opacity='0.55'%3E%3Ccircle cx='0' cy='-7' r='6'/%3E%3Ccircle cx='6.7' cy='-2.2' r='6'/%3E%3Ccircle cx='4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-6.7' cy='-2.2' r='6'/%3E%3C/g%3E%3Ccircle r='3' fill='%235c5236' opacity='0.6'/%3E%3C/g%3E%3Cg transform='translate(118 62) scale(0.6)'%3E%3Cg fill='%235a4246' opacity='0.55'%3E%3Ccircle cx='0' cy='-7' r='6'/%3E%3Ccircle cx='6.7' cy='-2.2' r='6'/%3E%3Ccircle cx='4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-6.7' cy='-2.2' r='6'/%3E%3C/g%3E%3Ccircle r='3' fill='%235c5236' opacity='0.6'/%3E%3C/g%3E%3C/svg%3E"), url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='110' viewBox='0 0 240 110'%3E%3Cg fill='%233b5238' opacity='0.45'%3E%3Cellipse cx='40' cy='30' rx='14' ry='5' transform='rotate(-30 40 30)'/%3E%3Cellipse cx='58' cy='44' rx='12' ry='4' transform='rotate(40 58 44)'/%3E%3Cellipse cx='150' cy='22' rx='12' ry='4' transform='rotate(-60 150 22)'/%3E%3Cellipse cx='198' cy='70' rx='14' ry='5' transform='rotate(20 198 70)'/%3E%3Cellipse cx='110' cy='74' rx='10' ry='4' transform='rotate(-20 110 74)'/%3E%3C/g%3E%3Cg transform='translate(30 22) scale(0.7)'%3E%3Cg fill='%235a4246' opacity='0.5'%3E%3Ccircle cx='0' cy='-7' r='6'/%3E%3Ccircle cx='6.7' cy='-2.2' r='6'/%3E%3Ccircle cx='4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-6.7' cy='-2.2' r='6'/%3E%3C/g%3E%3Ccircle r='3' fill='%235c5236' opacity='0.55'/%3E%3C/g%3E%3Cg transform='translate(168 36) scale(0.9)'%3E%3Cg fill='%235a4246' opacity='0.5'%3E%3Ccircle cx='0' cy='-7' r='6'/%3E%3Ccircle cx='6.7' cy='-2.2' r='6'/%3E%3Ccircle cx='4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-6.7' cy='-2.2' r='6'/%3E%3C/g%3E%3Ccircle r='3' fill='%235c5236' opacity='0.55'/%3E%3C/g%3E%3Cg transform='translate(222 80) scale(0.6)'%3E%3Cg fill='%235a4246' opacity='0.5'%3E%3Ccircle cx='0' cy='-7' r='6'/%3E%3Ccircle cx='6.7' cy='-2.2' r='6'/%3E%3Ccircle cx='4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-4.1' cy='5.7' r='6'/%3E%3Ccircle cx='-6.7' cy='-2.2' r='6'/%3E%3C/g%3E%3Ccircle r='3' fill='%235c5236' opacity='0.55'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* ---------- Gece teması (21:00–07:00) ---------- */
+body.gece { background-color: #0c100d; color: #a3ae9f; }
+.gece .bugun-tarih { color: #5f7d5a; }
+.gece .bugun-etiket { background: #2c3d2a; color: #a9bca3; }
+.gece .bugun-yemek { color: #aeb9a8; }
+.gece .bugun-yemek.bos { color: #404a40; }
+.gece .bugun-eslik { color: #6c776a; }
+.gece .bugun-eslik b { color: #9a767b; }
+.gece .bugun-yarin { color: #4f5a4e; }
+.gece .bugun-yarin b { color: #7d897b; }
+.gece .sekme { background: #151b16; }
+.gece .sekme-btn { color: #566155; }
+.gece .sekme-btn.aktif { background: #222b22; color: #adb8a8; -webkit-box-shadow: none; box-shadow: none; }
+.gece .btn-ana { background: #2c3d2a; color: #b9cbb2; -webkit-box-shadow: 0 3px 0 #1a2619; box-shadow: 0 3px 0 #1a2619; }
+.gece .btn-ikincil { border-color: #263026; color: #6c776a; }
+.gece .btn-ikincil:active { background: #151b16; }
+.gece .btn-metin { color: #5f7d5a; }
+.gece .dongu { color: #465046; }
+.gece .gun { background: #121712; border-color: #231e1a; }
+.gece .gun:active { background: #1a201a; }
+.gece .gun-ad { color: #5d7759; }
+.gece .gun-tarih, .gece .gun-kategori { color: #465046; }
+.gece .gun-yemek { color: #a3ae9f; }
+.gece .gun-eslik { color: #5c665a; }
+.gece .gun-eslik:before { color: #7d5f63; }
+.gece .gun.devam .gun-yemek { color: #6f7a6d; }
+.gece .gun.bos .gun-yemek { color: #353d34; }
+.gece .gun.gecmis { opacity: .35; }
+.gece .gun.bugun { background: #172216; border-color: #46613f; -webkit-box-shadow: 0 4px 0 #46613f; box-shadow: 0 4px 0 #46613f; }
+.gece .gun.bugun .gun-ad { color: #9a767b; }
+.gece .perde, .gece .onay { background: rgba(0, 0, 0, .6); }
+.gece .panel, .gece .onay-kutu { background: #151b16; color: #adb8a8; }
+.gece .panel-alt, .gece .onay-metin { color: #626c60; }
+.gece .alan-ad { color: #5f7d5a; }
+.gece .secim select { background: #0e120e; border-color: #2a332a; color: #b6c1b1; }
+.gece .secim:after { border-top-color: #5f7d5a; }
+
+/* ---------- Telefon / dar ekran (dikey) ---------- */
+@media (max-width: 760px) {
+  body {
+    background-position: right -18px top -6px, left 4px top 2px;
+    background-size: 150px 112px, 130px 60px;
+  }
+  .app { height: auto; min-height: 0; padding: 18px 16px 24px; }
+  .ust {
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    -webkit-align-items: stretch;
+    align-items: stretch;
+  }
+  .bugun { padding: 26px 0 6px; }
+  .bugun-tarih { font-size: 16px; }
+  .bugun-etiket { font-size: 12px; margin-left: 8px; vertical-align: 2px; }
+  .bugun-yemek { font-size: 52px; letter-spacing: -1.5px; margin-top: 10px; }
+  .bugun-yemek.uzun { font-size: 42px; letter-spacing: -1px; }
+  .bugun-yemek.cok-uzun { font-size: 34px; letter-spacing: -.5px; }
+  .bugun-eslik { font-size: 24px; margin-top: 10px; }
+  .bugun-yarin { font-size: 16px; margin-top: 16px; }
+  .eylemler {
+    width: auto;
+    -webkit-flex: 0 0 auto;
+    flex: 0 0 auto;
+    margin-top: 20px;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-wrap: wrap;
+    flex-wrap: wrap;
+  }
+  .eylemler .sekme, .eylemler .dongu { width: 100%; }
+  .eylemler .btn {
+    width: auto;
+    -webkit-flex: 1 1 0;
+    flex: 1 1 0;
+    font-size: 16px;
+    padding: 0 10px;
+  }
+  .eylemler .btn-ikincil { margin-left: 10px; }
+  .hafta {
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    margin-top: 14px;
+  }
+  .gun {
+    -webkit-flex: 0 0 auto;
+    flex: 0 0 auto;
+    height: auto;
+    min-height: 76px;
+    margin-left: 0;
+    margin-top: 8px;
+    padding: 12px 14px;
+  }
+  .gun:first-child { margin-top: 0; }
+  .gun-yemek { margin-top: 4px; font-size: 19px; }
+  .gun-eslik { margin-top: 3px; }
+  .gun-alt { position: static; margin-top: 6px; }
+  .gun.bugun { -webkit-box-shadow: 0 3px 0 #5e7f59; box-shadow: 0 3px 0 #5e7f59; }
+  .gece .gun.bugun { -webkit-box-shadow: 0 3px 0 #46613f; box-shadow: 0 3px 0 #46613f; }
+  .panel { width: 100%; padding: 20px 16px 24px; }
+  .panel-baslik { font-size: 24px; }
+  .onay-kutu { width: auto; margin: 0 16px; padding: 22px; }
+}
