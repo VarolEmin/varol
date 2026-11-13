@@ -25,9 +25,10 @@ button {
 
 /* ---------- Sayfa iskeleti ---------- */
 .app {
+  position: relative;
   height: 100%;
   min-height: 600px;
-  padding: 26px 30px 22px;
+  padding: 26px 30px 40px;
   display: -webkit-flex;
   display: flex;
   -webkit-flex-direction: column;
@@ -180,7 +181,7 @@ button {
   -webkit-flex: 1 1 0;
   flex: 1 1 0;
   min-width: 0;
-  height: 250px;
+  height: 240px;
   margin-left: 10px;
   padding: 14px 12px 12px;
   border-radius: 16px;
@@ -253,10 +254,10 @@ button {
   border: 1.5px solid #d1dbc6;
   background: #fbfcf7;
   color: #5e7f59;
-  font-size: 17px;
-  line-height: 27px;
   text-align: center;
 }
+.gun-yenile-ikon .ikon-yenile { display: block; margin: 5.5px auto 0; }
+.btn .ikon-yenile { display: inline-block; vertical-align: -2px; margin-right: 4px; }
 .gun-yenile:active .gun-yenile-ikon { background: #5e7f59; border-color: #5e7f59; color: #fff; }
 .gun.gecmis .gun-yenile { visibility: hidden; }
 .gun.devam .gun-yemek { color: #7f8b7f; }
@@ -276,6 +277,7 @@ button {
   left: 0; top: 0; right: 0; bottom: 0;
   background: rgba(20, 35, 22, .42);
   z-index: 10;
+  cursor: pointer; /* iOS: div üzerinde click delegasyonu için gerekli */
 }
 .perde.acik { display: block; }
 .panel {
@@ -363,6 +365,130 @@ button {
 .onay-butonlar .btn:first-child { margin-top: 0; }
 .onay-metin { margin: 10px 0 22px; font-size: 17px; line-height: 1.45; color: #5f6e60; }
 
+
+
+/* ---------- Tercihler (en altta, göze batmayan) ---------- */
+.alt-bar {
+  position: absolute;
+  right: 30px;
+  bottom: 0;
+  height: 38px;
+}
+.tercih-ac {
+  height: 38px;
+  padding: 0 4px 0 14px;
+  font-size: 13px;
+  letter-spacing: .4px;
+  color: #a9b3a6;
+}
+.tercih-ac:active { color: #5e7f59; }
+.tercih {
+  display: none;
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  z-index: 15;
+  background: #f1f4eb;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.tercih.acik { display: block; }
+.tercih-ic { max-width: 760px; margin: 0 auto; padding: 24px 28px 40px; }
+.tercih-ust {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+}
+.tercih-baslik { font-size: 32px; font-weight: 700; letter-spacing: -.5px; }
+.tercih-kapat { min-width: 120px; }
+.tercih-not { margin-top: 8px; font-size: 15px; line-height: 1.45; color: #7a877a; }
+.tercih-bolum {
+  margin-top: 22px;
+  padding: 18px 20px 8px;
+  border-radius: 16px;
+  background: #fbfcf7;
+  border: 2px solid #dfe7d5;
+}
+.tercih-bolum-baslik {
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  color: #4f6f4c;
+}
+.tercih-grup-baslik { margin: 14px 0 2px; font-size: 17px; font-weight: 700; color: #22302a; }
+.tercih-satir {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  min-height: 56px;
+  padding: 6px 0;
+  border-top: 1px solid #e8eee0;
+}
+.tercih-bolum-baslik + .tercih-satir, .tercih-grup-baslik + .tercih-liste .tercih-satir:first-child { border-top: 0; }
+.tercih-ad {
+  -webkit-flex: 1 1 auto;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-right: 14px;
+  font-size: 17px;
+  font-weight: 600;
+  color: #22302a;
+}
+.tercih-aciklama { display: block; margin-top: 2px; font-size: 13px; font-weight: 400; color: #8f9b8e; }
+.tercih-satir.degisti .tercih-ad:after {
+  content: "değişti";
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 7px 2px;
+  border-radius: 9px;
+  background: #f3e3e5;
+  color: #a5636b;
+  font-size: 11px;
+  font-weight: 700;
+  vertical-align: 2px;
+}
+.secim-kucuk {
+  width: 170px;
+  -webkit-flex: 0 0 170px;
+  flex: 0 0 170px;
+}
+.secim-kucuk:after { top: 20px; right: 14px; }
+.secim-kucuk select { height: 46px; font-size: 16px; padding: 0 36px 0 12px; }
+.gun-secici {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-wrap: wrap;
+  flex-wrap: wrap;
+  margin: 4px 0 10px -8px;
+}
+.gun-sec {
+  min-height: 44px;
+  margin: 8px 0 0 8px;
+  padding: 0 14px;
+  border-radius: 22px;
+  border: 2px solid #d1dbc6;
+  font-size: 15px;
+  font-weight: 600;
+  color: #5f6e60;
+}
+.gun-sec.secili { background: #a5636b; border-color: #a5636b; color: #fff; }
+.tercih-alt { margin-top: 22px; text-align: center; }
+.tercih-alt .btn { display: inline-block; min-width: 220px; }
+
+.gece .tercih-ac { color: #3b443a; }
+.gece .tercih { background: #0c100d; }
+.gece .tercih-baslik, .gece .tercih-ad, .gece .tercih-grup-baslik { color: #adb8a8; }
+.gece .tercih-not, .gece .tercih-aciklama { color: #5c665a; }
+.gece .tercih-bolum { background: #121712; border-color: #1f281f; }
+.gece .tercih-bolum-baslik { color: #5f7d5a; }
+.gece .tercih-satir { border-top-color: #1a211a; }
+.gece .gun-sec { border-color: #263026; color: #6c776a; }
+.gece .gun-sec.secili { background: #5a3f44; border-color: #5a3f44; color: #c9b5b8; }
 
 /* SUSLER-BASLA — scripts/susler.py üretir, elle düzenleme */
 body {
@@ -477,6 +603,13 @@ body.gece { background-color: #0c100d; color: #a3ae9f; }
   .gun.gecmis .gun-yenile { visibility: visible; }
   .gun.bugun { -webkit-box-shadow: 0 3px 0 #5e7f59; box-shadow: 0 3px 0 #5e7f59; }
   .gece .gun.bugun { -webkit-box-shadow: 0 3px 0 #46613f; box-shadow: 0 3px 0 #46613f; }
+  .alt-bar { position: static; height: auto; margin-top: 18px; text-align: center; }
+  .tercih-ac { padding: 0 14px; height: 44px; }
+  .tercih-ic { padding: 18px 16px 32px; }
+  .tercih-baslik { font-size: 26px; }
+  .tercih-bolum { padding: 14px 14px 6px; }
+  .secim-kucuk { width: 140px; -webkit-flex: 0 0 140px; flex: 0 0 140px; }
+  .tercih-ad { font-size: 16px; }
   .panel { width: 100%; padding: 20px 16px 24px; }
   .panel-baslik { font-size: 24px; }
   .onay-kutu { width: auto; margin: 0 16px; padding: 22px; }

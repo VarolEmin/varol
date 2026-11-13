@@ -15,8 +15,15 @@
   var DEVAM = 'Dünden devam';
   var ESLIKSIZ = ['Salata bowl', 'Dışarıda', 'Yeni tarif'];
   var PRATIK_GUNLERI = ['Sebze yemeği', 'Bakliyat', 'Tavuk', 'Et'];
-  var PRATIK_KATSAYI = 0.15;
-  var SEYREK_BEKLEME_HAFTA = 6;
+  var VARSAYILAN_AYARLAR = {
+    tekrarHafta: 2,
+    seyrekBeklemeHafta: 6,
+    pratikKatsayi: 0.15,
+    haftaSonuPratikCarpan: 2,
+    tavukHaftasiCarpan: 2,
+    salcaFiltresi: true,
+    tavukCorbaFiltresi: true
+  };
   var DEFAULT_W = { 'Sık': 4, 'Normal': 2, 'Seyrek': 1, 'Kapalı': 0 };
 
   function pad2(n) { return n < 10 ? '0' + n : String(n); }
@@ -70,16 +77,27 @@
     return ay >= m.bas || ay <= m.son;
   }
 
-  var cacheData = null;
-  var cacheIdx = null;
+  // data.ayarlar (isteğe bağlı) ile varsayılanları birleştirir; her çağrıda yeni kopya.
+  function ayarlar(data) {
+    var out = {};
+    var src = (data && data.ayarlar) || {};
+    var keys = Object.keys(VARSAYILAN_AYARLAR);
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i];
+      var d = VARSAYILAN_AYARLAR[k];
+      var v = src[k];
+      if (typeof d === 'boolean') { out[k] = (typeof v === 'boolean') ? v : d; }
+      else { out[k] = (typeof v === 'number' && isFinite(v) && v >= 0) ? v : d; }
+    }
+    return out;
+  }
+
+  // Önbellek yok: app farklı/değiştirilmiş bir data kopyası verebilir.
   function index(data) {
-    if (cacheData === data && cacheIdx) { return cacheIdx; }
     var by = {};
     var list = data.yemekler;
     for (var i = 0; i < list.length; i++) { by[list[i].ad] = list[i]; }
-    cacheData = data;
-    cacheIdx = { by: by, w: data.agirliklar || DEFAULT_W };
-    return cacheIdx;
+    return { by: by, w: data.agirliklar || DEFAULT_W };
   }
 
   function weightOf(idx, y) {
@@ -103,6 +121,7 @@
 
   function eslikAdaylari(data, anaAd, ay) {
     var idx = index(data);
+    var ayar = ayarlar(data);
     var ana = idx.by[anaAd];
     var out = [];
     if (!ana || ESLIKSIZ.indexOf(ana.kategori) >= 0) { return out; }
@@ -110,7 +129,7 @@
     for (var i = 0; i < list.length; i++) {
       var e = idx.by[list[i]];
       if (!e || weightOf(idx, e) <= 0 || !inSeason(e, ay)) { continue; }
-      if (ana.kategori === 'Tavuk' && e.kategori === 'Çorba' && e.tavuklu) { continue; }
+      if (ayar.tavukCorbaFiltresi && ana.kategori === 'Tavuk' && e.kategori === 'Çorba' && e.tavuklu) { continue; }
       out.push(e);
     }
     return out;
@@ -125,7 +144,7 @@
     if (!cands.length) { return null; }
     var prev = opts.prevEslik ? idx.by[opts.prevEslik] : null;
     var avoid = opts.avoid || null;
-    var salcali = ana && ana.taban === 'Salçalı';
+    var salcali = ayarlar(data).salcaFiltresi && ana && ana.taban === 'Salçalı';
     // gevşetme sırası: tür tercihi, Salçalı filtresi, önceki günden farklı olma
     var combos = [[true, true, true], [true, true, false], [true, false, false], [false, false, false]];
     for (var c = 0; c < combos.length; c++) {
@@ -261,6 +280,7 @@
   // son n haftada (history'de var olan kadarıyla) çıkan ana yemekler
   function lastNames(history, monday, n) {
     var keys = [];
+    n = Math.floor(n);
     for (var w = 1; w <= n; w++) { keys.push(dateKey(addDays(monday, -7 * w))); }
     var m = {};
     var h = history || [];
@@ -273,16 +293,15 @@
     return m;
   }
 
-  function last2Names(history, monday) { return lastNames(history, monday, 2); }
-
   // ctx: { monday, tmpl, days, last2, tavukHaftasi }
   function pickAna(data, ctx, i, cat, rng, avoid, allowPratik) {
     var idx = index(data);
     var date = addDays(ctx.monday, i);
     var ay = date.getMonth() + 1;
-    var hafta = (i >= 5) ? 2 : 1;
+    var hafta = (i >= 5) ? ctx.ayar.haftaSonuPratikCarpan : 1;
     var cands = [];
     var k, y, w;
+    var ayar = ctx.ayar;
     var tavukBonus = ctx.tavukHaftasi && (cat === 'Sebze yemeği' || cat === 'Bakliyat');
     for (k = 0; k < data.yemekler.length; k++) {
       y = data.yemekler[k];
@@ -290,10 +309,10 @@
       w = weightOf(idx, y);
       if (w <= 0) { continue; }
       if (y.kategori === cat) {
-        if (tavukBonus && y.tavuklu) { w = w * 2; }
+        if (tavukBonus && y.tavuklu) { w = w * ayar.tavukHaftasiCarpan; }
         cands.push({ y: y, w: w });
-      } else if (allowPratik && y.kategori === 'Pratik') {
-        cands.push({ y: y, w: w * PRATIK_KATSAYI * hafta });
+      } else if (allowPratik && y.kategori === 'Pratik' && ayar.pratikKatsayi > 0) {
+        cands.push({ y: y, w: w * ayar.pratikKatsayi * hafta });
       }
     }
     var chosen = usedNames(ctx.days, i);
@@ -355,7 +374,8 @@
   function makeCtx(data, monday, history, days, tmpl) {
     var tavuk = false;
     for (var i = 0; i < tmpl.length; i++) { if (tmpl[i].kategori === 'Tavuk') { tavuk = true; } }
-    return { monday: monday, tmpl: tmpl, days: days, last2: last2Names(history, monday), lastSeyrek: lastNames(history, monday, SEYREK_BEKLEME_HAFTA), tavukHaftasi: tavuk };
+    var ayar = ayarlar(data);
+    return { monday: monday, tmpl: tmpl, days: days, ayar: ayar, last2: lastNames(history, monday, ayar.tekrarHafta), lastSeyrek: lastNames(history, monday, ayar.seyrekBeklemeHafta), tavukHaftasi: tavuk };
   }
 
   function planWeek(data, monday, opts) {
@@ -443,6 +463,8 @@
     inSeason: inSeason,
     hashStr: hashStr,
     mulberry32: mulberry32,
+    VARSAYILAN_AYARLAR: VARSAYILAN_AYARLAR,
+    ayarlar: ayarlar,
     eslikAdaylari: eslikAdaylari,
     eslikSec: eslikSec,
     planWeek: planWeek,

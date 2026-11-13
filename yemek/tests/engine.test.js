@@ -308,6 +308,75 @@ for (var wk = 0; wk < 52; wk++) {
 check('n) yerleşim counter 0..20 için aynı', errs.length === 0, errs.slice(0, 5).join(', '));
 check('n2) Pzt-Sal kilitliyken her hafta 1 balık, 3 gün tekrar yok', lockErrs.length === 0, lockErrs.slice(0, 5).join(', '));
 
+
+// ---- Ayarlar (data.ayarlar) ----
+function kopya(ek) {
+  var d = JSON.parse(JSON.stringify(DATA));
+  if (ek) { ek(d); }
+  return d;
+}
+function simData(d, seeds, weeks) {
+  var all = [];
+  for (var s = 0; s < seeds; s++) {
+    var h = [];
+    for (var w = 0; w < weeks; w++) {
+      var p = E.planWeek(d, addDays(START, 7 * w), { history: h, counter: s });
+      h.push(p); all.push(p);
+    }
+  }
+  return all;
+}
+function sayDay(ps, fn) {
+  var n = 0;
+  ps.forEach(function (p) { p.days.forEach(function (d) { if (fn(d)) { n++; } }); });
+  return n;
+}
+check('n-a) ayarlar(data) varsayılanları birleştirir', E.ayarlar(DATA).tekrarHafta === 2 && E.ayarlar({ ayarlar: { tekrarHafta: 0 } }).tekrarHafta === 0 && E.ayarlar({ ayarlar: { tekrarHafta: 0 } }).seyrekBeklemeHafta === 6 && E.VARSAYILAN_AYARLAR.salcaFiltresi === true);
+
+var dP = kopya(function (d) { d.ayarlar = { pratikKatsayi: 0 }; });
+var pn = sayDay(simData(dP, 3, 52), function (d) { return d.ana && BY[d.ana].kategori === 'Pratik'; });
+check('n-b) pratikKatsayi 0 → hiç pratik yok', pn === 0, String(pn));
+
+var dT = kopya(function (d) { d.ayarlar = { tekrarHafta: 0, seyrekBeklemeHafta: 0 }; });
+var tp = simData(dT, 3, 52);
+var tr = sayDay(tp, function (d) { return d.relaxed; });
+check('n-c) tekrarHafta 0 & seyrek 0 → çalışır, gevşeme yok', tp.length === 156 && tr === 0, String(tr));
+
+function salcaCift(ps) {
+  return sayDay(ps, function (d) { return d.ana && d.eslik && BY[d.ana].taban === 'Salçalı' && BY[d.eslik].kategori === 'Çorba'; });
+}
+// Gerçek veride Salçalı-Salçalı kombinasyonu yok; kopyada tüm çorbaları Salçalı yap.
+function salcaVeri(ek) {
+  return kopya(function (d) {
+    d.yemekler.forEach(function (y) { if (y.kategori === 'Çorba') { y.taban = 'Salçalı'; } });
+    d.ayarlar = ek;
+  });
+}
+var scAcik = salcaCift(simData(salcaVeri({}), 4, 52));
+var scKapali = salcaCift(simData(salcaVeri({ salcaFiltresi: false }), 4, 52));
+check('n-d) salcaFiltresi false → Salçalı-Salçalı görülür (' + scKapali + '), açıkken daha az (' + scAcik + ')', scKapali > 0 && scKapali > scAcik);
+
+var kapali = null;
+DATA.yemekler.forEach(function (y) { if (!kapali && y.kategori === 'Balık' && y.siklik === 'Sık') { kapali = y.ad; } });
+var dK = kopya(function (d) { d.yemekler.forEach(function (y) { if (y.ad === kapali) { y.siklik = 'Kapalı'; } }); });
+var kc = sayDay(simData(dK, 2, 52), function (d) { return d.ana === kapali; });
+check('n-e) siklik Kapalı yapılan veri kopyası → ' + kapali + ' hiç çıkmaz', kc === 0, String(kc));
+
+var dB = kopya(function (d) { d.esnek['Balık'].yasak = [0, 1, 2, 3, 4, 5, 6]; });
+var bp = simData(dB, 2, 52);
+var bn = 0;
+bp.forEach(function (p) { if (!p.days.some(function (d) { return d.ana && BY[d.ana].kategori === 'Balık'; })) { bn++; } });
+check('n-f) Balık yasak [0..6] → çökme yok, her hafta balık', bp.length === 104 && bn === 0, String(bn));
+
+var dW = kopya(function (d) { d.agirliklar = { 'Sık': 1, 'Normal': 1, 'Seyrek': 1, 'Kapalı': 0 }; });
+function seyrekOran(d) {
+  var ps = simData(d, 3, 52);
+  var tot = sayDay(ps, function (x) { return x.ana; });
+  return sayDay(ps, function (x) { return x.ana && BY[x.ana].siklik === 'Seyrek'; }) / tot;
+}
+var so0 = seyrekOran(DATA), so1 = seyrekOran(dW);
+check('n-g) ağırlıklar eşitlenince Seyrek oranı yükselir (' + so0.toFixed(3) + ' → ' + so1.toFixed(3) + ')', so1 > so0);
+
 print('');
 print('OZET: ' + passN + ' PASS, ' + failN + ' FAIL');
 

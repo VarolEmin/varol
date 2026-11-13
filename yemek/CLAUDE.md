@@ -44,6 +44,15 @@ Komutlar (`yemek/` içinden):
 
 **Sertifika (13.11.2026 openssl ile doğrulandı):** `*.github.io` → Let's Encrypt YR1 → Root YR → ISRG Root X1, TLS 1.2 var, HTTP 301 ile HTTPS'e yönleniyor (HSTS). iOS 9 ISRG Root X1'e güvenmez → iPad'e bir kez kök sertifika yüklenmeli: Safari'de `http://x1.i.lencr.org/` (SHA-256 96:BC:EC:06…08:C6) → profili yükle.
 
+## Tercihler ekranı
+En altta silik "Tercihler" bağlantısı → tam ekran ayarlar. localStorage `yemekPlani.tercih.v1`, yalnızca md/varsayılandan farklı değerler saklanır (cihaza özel). Uygulama her motor çağrısında `etkinVeri()` (YEMEK_DATA kopyası + tercihler) kullanır. Motor kural sabitlerini `data.ayarlar`'dan okur; varsayılanlar `YemekEngine.VARSAYILAN_AYARLAR` (tekrarHafta 2, seyrekBeklemeHafta 6, pratikKatsayi 0.15, haftaSonuPratikCarpan 2, tavukHaftasiCarpan 2, salcaFiltresi, tavukCorbaFiltresi). Tercih değişince mevcut planlar yeniden üretilmez.
+
+## iOS 9 uyumluluk notları (13.11.2026 denetimi)
+- Gerçek cihaz/simülatör yok (Xcode yok; güncel Xcode iOS 9 simülatörü desteklemez). Denetim: kullanılan tüm JS çağrıları ve CSS özellikleri Safari 9 desteğiyle karşılaştırıldı + `check.py` + jsc parse.
+- Özel karakter ikonları (↻ vb.) kullanma: iOS 9 fontlarında olmayabilir → inline SVG.
+- `:active` için app.js'te boş `touchstart` dinleyicisi var; silme.
+- Click delegasyonu yapılan buton olmayan öğelere (`.gun`, `.perde`) `cursor: pointer` şart (iOS div'lerde click üretmez).
+
 ## Görsel kimlik
 Adaçayı yeşili palet (parlak yeşil yok), vurgu soluk gül rengi; arka planda çok hafif inline SVG dal/çiçek süsleri (kozmos, papatya, lavanta, damarlı yaprak) — `python3 scripts/susler.py` üretir, style.css'te SUSLER bloğunu elle düzenleme. "Dünden devam" günlerinde yemek adı bilerek soluk. Telefonda (≤760px) tek sütun düzen.
 
